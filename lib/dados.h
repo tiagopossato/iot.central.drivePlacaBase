@@ -8,25 +8,28 @@
 #include <stdlib.h>
 #include <string.h>
 
-sem_t semaforo;
-
-typedef struct sDados
+struct No
 {
-    unsigned int id;
-    unsigned char codigo;
-    unsigned char msg[7];
+    unsigned int idRede;
+    unsigned int tipoGrandeza;
+    unsigned int grandeza;
+      
     time_t timestamp;
     struct Dados *prox;
-}Dados;
+};
+
+typedef struct No Dados;
+
 
 /*
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-bool insereDados(unsigned int _id, unsigned char _codigo, unsigned char *_msg);
-Dados *popDados();
+bool insereDados(unsigned int _idRede, unsigned char _codigo, unsigned char *_msg);
+Dados *peekDados();
 bool removeDados(Dados *dado);
-void imprimeListaDados();
+void imprimeFilasDados();
+void mostraDados(Dados *dado);
 //gravacao de Dados offline
 void gravaDados();
 

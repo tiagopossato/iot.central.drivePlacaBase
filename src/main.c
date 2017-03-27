@@ -9,22 +9,50 @@
 int main(int argc, char **argv)
 {
     printf("Iniciando...\n");
-    if (sem_init(&semaforo, 0, 1) == -1)
-    {
-        printf("Erro no semáforo!");
-    }
+    iniciaFila();
+
     unsigned int id = 1;
     unsigned char codigo = 70;
     unsigned char msg[7] = {};
-    msg[0] = 23;
-    msg[1] = 57;
+    msg[0] = 71;
+    msg[1] = 25;
+    msg[2] = 57;    
     insereDados(id, codigo, msg);
+    
     id = 2;
     codigo = 70;
-    msg[0] = 19;
-    msg[1] = 32;
+    msg[0] = 71;
+    msg[1] = 19;
+    msg[2] = 32;
     insereDados(id, codigo, msg);
-    imprimeListaDados();
+    
+    id = 1;
+    codigo = 70;
+    msg[0] = 72;
+    msg[1] = 84;
+    msg[2] = 89;
+    insereDados(id, codigo, msg);
+    
+    imprimeFilaDados();
 
+    Dados *tmp;
+    tmp = peekDados();
+    mostraDados(tmp);
+    removeDados(tmp);
+    
+    tmp = peekDados();
+    mostraDados(tmp);
+    removeDados(tmp);
+    
+    imprimeFilaDados();
+    
+    id = 2;
+    codigo = 70;
+    msg[0] = 71;
+    msg[1] = 20;
+    msg[2] = 25;
+    insereDados(id, codigo, msg);
+    
+    imprimeFilaDados();
     return (EXIT_SUCCESS);
 }
