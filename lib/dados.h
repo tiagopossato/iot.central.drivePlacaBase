@@ -11,26 +11,31 @@
 struct No
 {
     unsigned int idRede;
-    unsigned int tipoGrandeza;
+    unsigned int tipoGrandeza;                                                                                                                                                     
     unsigned int grandeza;
-      
+    float valor;
     time_t timestamp;
     struct Dados *prox;
 };
 
 typedef struct No Dados;
 
+typedef struct sFilaDados
+{
+    Dados *head;
+    int quantidade;
+} FilaDados;
 
 /*
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-bool insereDados(unsigned int _idRede, unsigned char _codigo, unsigned char *_msg);
-Dados *peekDados();
-bool removeDados(Dados *dado);
-void imprimeFilasDados();
+bool insereDados(unsigned int _idRede, unsigned char _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
+Dados *peekDados(FilaDados *fila);
+bool removeDados(Dados *dado, FilaDados *fila);
+void imprimeFilaDados(FilaDados *fila);
 void mostraDados(Dados *dado);
-//gravacao de Dados offline
-void gravaDados();
+void libera(FilaDados *fila);
+FilaDados *iniciaFila();
 
 #endif /* DADOS_H_ */

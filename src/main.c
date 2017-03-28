@@ -8,51 +8,28 @@
  */
 int main(int argc, char **argv)
 {
-    printf("Iniciando...\n");
-    iniciaFila();
+    
+    FilaDados *DADOS = iniciaFila();
+    
+    unsigned int idRede = 2;
+    unsigned int tipoGrandeza = 3202;
+    unsigned int grandeza = 3303;
+    float valor = 25.69;
+    
+    insereDados(idRede, tipoGrandeza, grandeza, valor, DADOS);
 
-    unsigned int id = 1;
-    unsigned char codigo = 70;
-    unsigned char msg[7] = {};
-    msg[0] = 71;
-    msg[1] = 25;
-    msg[2] = 57;    
-    insereDados(id, codigo, msg);
+    idRede = 2;
+    tipoGrandeza = 3202;
+    grandeza = 3304;
+    valor = 56.89;
+    insereDados(idRede, tipoGrandeza, grandeza, valor, DADOS);
+    imprimeFilaDados(DADOS);
     
-    id = 2;
-    codigo = 70;
-    msg[0] = 71;
-    msg[1] = 19;
-    msg[2] = 32;
-    insereDados(id, codigo, msg);
-    
-    id = 1;
-    codigo = 70;
-    msg[0] = 72;
-    msg[1] = 84;
-    msg[2] = 89;
-    insereDados(id, codigo, msg);
-    
-    imprimeFilaDados();
-
     Dados *tmp;
-    tmp = peekDados();
+    tmp = peekDados(DADOS);
     mostraDados(tmp);
-    removeDados(tmp);
-    
-    tmp = peekDados();
-    mostraDados(tmp);
-    removeDados(tmp);
-    
-    imprimeFilaDados();
-    
-    id = 2;
-    codigo = 70;
-    msg[0] = 71;
-    msg[1] = 20;
-    msg[2] = 25;
-    insereDados(id, codigo, msg);
-    
-    imprimeFilaDados();
+    removeDados(tmp,DADOS);
+    imprimeFilaDados(DADOS);
+   
     return (EXIT_SUCCESS);
 }
