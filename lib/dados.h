@@ -30,7 +30,7 @@ typedef struct sFilaDados
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-bool insereDados(unsigned int _idRede, unsigned char _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
+bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
 Dados *peekDados(FilaDados *fila);
 bool removeDados(Dados *dado, FilaDados *fila);
 void imprimeFilaDados(FilaDados *fila);

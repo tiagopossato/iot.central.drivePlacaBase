@@ -46,7 +46,7 @@ FilaDados *iniciaFila(){
 Cria uma estrutura do tipo Dados com os parâmetros recebidos
 e insere na fila de Dados
 */
-bool insereDados(unsigned int _idRede, unsigned char _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
+bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
     sem_wait(&semaforo);
