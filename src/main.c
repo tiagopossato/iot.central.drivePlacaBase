@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include "../lib/dados.h"
+#include "../lib/definicoes.h"
 
 FilaDados *DADOS;
 
@@ -12,7 +13,16 @@ bool validaTipoGrandeza(unsigned int tipo);
 
 void intHandler(int dummy)
 {
-    printf("\nSinal de encerramento recebido, encerrando fila e saindo...\n");
+    printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
+    int i = DADOS->quantidade;
+    for (; i > 0; i--)
+    {
+        Dados *tmp;
+        tmp = peekDados(DADOS);
+        mostraDados(tmp);
+        removeDados(tmp, DADOS);
+    }
+
     libera(DADOS);
     exit(EXIT_SUCCESS);
 }
@@ -31,6 +41,11 @@ int main(int argc, char **argv)
     unsigned int grandeza;
     float valor;
     DADOS = iniciaFila();
+    if (DADOS == NULL)
+    {
+        printf("Não pode iniciar a fila de dados!\n");
+        exit(EXIT_FAILURE);
+    }
 
     signal(SIGINT, intHandler);
 
@@ -42,70 +57,57 @@ int main(int argc, char **argv)
         char saida[5];
         unsigned int i = 0;
         unsigned char j = 0;
-        unsigned char k = 0;
         //-------------------------------------------------
-        for (k = 0; k < strlen(saida); k++)
-        {
-            saida[k] = '\r';
-        }
+        memset(saida, '\r', sizeof(saida));
         for (; i < strlen(uri); i++)
         {
             if (uri[i] == '/')
             {
+                i++;
+                j = 0;
                 break;
             }
             saida[j++] = uri[i];
         }
-        i++;
-        j = 0;
         idRede = (unsigned int)atoi(saida);
         //-------------------------------------------------
-        for (k = 0; k < strlen(saida); k++)
-        {
-            saida[k] = '\r';
-        }
+        memset(saida, '\r', sizeof(saida));
         for (; i < strlen(uri); i++)
         {
             if (uri[i] == '/')
             {
+                i++;
+                j = 0;
                 break;
             }
             saida[j++] = uri[i];
         }
-        i++;
-        j = 0;
         tipoGrandeza = (unsigned int)atoi(saida);
         //-------------------------------------------------
-        for (k = 0; k < strlen(saida); k++)
-        {
-            saida[k] = '\r';
-        }
+        memset(saida, '\r', sizeof(saida));
         for (; i < strlen(uri); i++)
         {
             if (uri[i] == '/')
             {
+                i++;
+                j = 0;
                 break;
             }
             saida[j++] = uri[i];
         }
-        i++;
-        j = 0;
         grandeza = (unsigned int)atoi(saida);
         //-------------------------------------------------
-        for (k = 0; k < strlen(saida); k++)
-        {
-            saida[k] = '\r';
-        }
+        memset(saida, '\r', sizeof(saida));
         for (; i < strlen(uri); i++)
         {
             if (uri[i] == '/')
             {
+                i++;
+                j = 0;
                 break;
             }
             saida[j++] = uri[i];
         }
-        i++;
-        j = 0;
         valor = atof(saida);
         //-------------------------------------------------
 
@@ -130,12 +132,6 @@ int main(int argc, char **argv)
 
 bool validaGrandeza(unsigned int grandeza)
 {
-    enum G
-    {
-        temperatura = 3303,
-        umidadeAr = 3304,
-        umidadeSolo = 3320
-    } Grandezas;
     switch (grandeza)
     {
     case temperatura:
@@ -151,12 +147,6 @@ bool validaGrandeza(unsigned int grandeza)
 
 bool validaTipoGrandeza(unsigned int tipo)
 {
-    enum TP
-    {
-        entradaDigital = 3200,
-        saidaDigital = 3201,
-        entradaAnalogica = 3202
-    } TipoGrandezas;
     switch (tipo)
     {
     case entradaDigital:

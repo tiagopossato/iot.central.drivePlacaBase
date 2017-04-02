@@ -8,38 +8,34 @@
 
 #define DEBUG
 
-sem_t semaforo;
-bool iniciado = false;
-
 //Função privada para adicioar elemento no final da fila
 void adicionaFim(Dados *novo, FilaDados *fila);
 
 /**
  *  Inicia todos os recursos da fila
  */
-FilaDados *iniciaFila(){
-    if (sem_init(&semaforo, 0, 1) == -1)
-    {
-        #if defined(DEBUG)
-            printf("Erro no semáforo!");
-        #endif
-        return false;
-    }
+FilaDados *iniciaFila()
+{
     FilaDados *fila;
     fila = (FilaDados *)malloc(sizeof(FilaDados));
     fila->head = NULL;
     fila->quantidade = 0;
-
-    if(fila == NULL){
-        #if defined(DEBUG)
-            printf("Erro ao criar fila de dados!");
-        #endif
-        
-        return false;
+    if (sem_init(&fila->semaforo, 0, 1) == -1)
+    {
+#if defined(DEBUG)
+        printf("Erro no semáforo!");
+#endif
+        return NULL;
     }
-    iniciado = true;
+
+    if (fila == NULL)
+    {
+#if defined(DEBUG)
+        printf("Erro ao criar fila de dados!");
+#endif
+        return NULL;
+    }
     return fila;
-    
 }
 
 /*
@@ -49,8 +45,8 @@ e insere na fila de Dados
 bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
-    sem_wait(&semaforo);
-    
+    sem_wait(&fila->semaforo);
+
     //cria nova estrutura
     Dados *novo = (Dados *)malloc(sizeof(Dados));
     if (!novo)
@@ -63,14 +59,13 @@ bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int 
     novo->valor = _valor;
     novo->timestamp = time(0);
     novo->prox = NULL;
-    
+
     //Adiciona Dados no final da fila
-    adicionaFim(novo,fila);
+    adicionaFim(novo, fila);
     /* libera semaforo */
-    sem_post(&semaforo);
+    sem_post(&fila->semaforo);
     return true;
 }
-
 
 /**
  * Adiciona novos Dados no final da fila
@@ -101,31 +96,25 @@ void adicionaFim(Dados *novo, FilaDados *fila)
     fila->quantidade++;
 }
 
-Dados *peekDados(FilaDados *fila){
-    if (!iniciado)
-    {
-        iniciaFila(fila);
-    }
-    sem_wait(&semaforo);
-    
+Dados *peekDados(FilaDados *fila)
+{
+    sem_wait(&fila->semaforo);
+
     //pega o primeiro nó da fila
     Dados *tmp = fila->head;
 
     /*Libera semaforo*/
-    sem_post(&semaforo);
-    
+    sem_post(&fila->semaforo);
+
     //retorna o nó
     return tmp;
 }
 /**
  * Remove item na posicao desejada
  */
-bool removeDados(Dados *dado, FilaDados *fila){
-    
-#if defined(DEBUG)
-  printf("Removendo no\n");
-#endif
-    
+bool removeDados(Dados *dado, FilaDados *fila)
+{
+    sem_wait(&fila->semaforo);
     //cria nova struct e aponta para o primeiro valor da fila
     Dados *anterior = fila->head,
           //cria nova struct e aponta para o segundo valor
@@ -158,17 +147,19 @@ bool removeDados(Dados *dado, FilaDados *fila){
     }
 
     fila->quantidade--;
+    /*Libera semaforo*/
+    sem_post(&fila->semaforo);
     return true;
 }
 
 void imprimeFilaDados(FilaDados *fila)
 {
-    sem_wait(&semaforo);
+    sem_wait(&fila->semaforo);
 
     if (fila->head == NULL)
     {
         /*Libera semaforo*/
-        sem_post(&semaforo);
+        sem_post(&fila->semaforo);
         return;
     }
 
@@ -181,15 +172,17 @@ void imprimeFilaDados(FilaDados *fila)
     }
     printf("\n");
     /*Libera semaforo*/
-    sem_post(&semaforo);
+    sem_post(&fila->semaforo);
 }
 
-void mostraDados(Dados *dado){
-        printf("idRede: %d\n", dado->idRede);
-        printf("tipoGrandeza: %d\n", dado->tipoGrandeza);
-        printf("grandeza: %d\n", dado->grandeza);
-        printf("valor: %f\n", dado->valor);
-        printf("timestamp: %d\n\n", (int)dado->timestamp);
+void mostraDados(Dados *dado)
+{
+    printf("\n--------[ %p ]---------\n",dado);
+    printf("idRede: %d\n", dado->idRede);
+    printf("tipoGrandeza: %d\n", dado->tipoGrandeza);
+    printf("grandeza: %d\n", dado->grandeza);
+    printf("valor: %f\n", dado->valor);
+    printf("timestamp: %d\n", (int)dado->timestamp);
 }
 
 void libera(FilaDados *fila)

@@ -24,6 +24,7 @@ typedef struct sFilaDados
 {
     Dados *head;
     int quantidade;
+    sem_t semaforo;
 } FilaDados;
 
 /*
