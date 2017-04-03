@@ -1,6 +1,12 @@
 #ifndef DEFINICOES_H_
 #define DEFINICOES_H_
 
+#include <stdbool.h>
+
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 enum TP
 {
     entradaDigital = 3200,
@@ -14,5 +20,12 @@ enum G
     umidadeAr = 3304,
     umidadeSolo = 3320
 } Grandezas;
+
+extern bool validaGrandeza(unsigned int grandeza);
+extern bool validaTipoGrandeza(unsigned int tipo);
+
+#ifdef	__cplusplus
+}
+#endif
 
 #endif /* DEFINICOES_H_ */

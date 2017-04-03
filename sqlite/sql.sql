@@ -13,7 +13,7 @@ insert into central_ambiente (nome) values ('Ambiente B');
 insert into central_ambiente (nome) values ('Ambiente C');
 
 --insert grandeza
-insert into central_grandeza (codigo, nome, unidade) values (3303, 'Temperatura', 'ºC');
+insert into central_grandeza (codigo, nome, unidade) values (3303, 'Temperatura', '°C');
 insert into central_grandeza (codigo, nome, unidade) values (3304, 'Umidade do ar', '%');
 insert into central_grandeza (codigo, nome, unidade) values (3320, 'Umidade do solo', '%');
 

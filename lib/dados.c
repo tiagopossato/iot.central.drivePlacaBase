@@ -14,11 +14,12 @@ void adicionaFim(Dados *novo, FilaDados *fila);
 /**
  *  Inicia todos os recursos da fila
  */
-FilaDados *iniciaFila()
+extern FilaDados *iniciaFila()
 {
     FilaDados *fila;
     fila = (FilaDados *)malloc(sizeof(FilaDados));
     fila->head = NULL;
+    fila->tail = NULL;
     fila->quantidade = 0;
     if (sem_init(&fila->semaforo, 0, 1) == -1)
     {
@@ -42,7 +43,7 @@ FilaDados *iniciaFila()
 Cria uma estrutura do tipo Dados com os parâmetros recebidos
 e insere na fila de Dados
 */
-bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
+extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
     sem_wait(&fila->semaforo);
@@ -51,6 +52,7 @@ bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int 
     Dados *novo = (Dados *)malloc(sizeof(Dados));
     if (!novo)
     {
+        sem_post(&fila->semaforo);
         return false;
     }
     novo->idRede = _idRede;
@@ -58,7 +60,8 @@ bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int 
     novo->grandeza = _grandeza;
     novo->valor = _valor;
     novo->timestamp = time(0);
-    novo->prox = NULL;
+    novo->next = NULL;
+    novo->next = NULL;
 
     //Adiciona Dados no final da fila
     adicionaFim(novo, fila);
@@ -79,24 +82,21 @@ void adicionaFim(Dados *novo, FilaDados *fila)
     {
         //caso estiver, aponta para a estrutura criada
         fila->head = novo;
+        fila->tail = novo;
     }
     else
     {
         //caso nao estiver vazia
-        //cria um nó temporario, apontando para o primeiro elemento da fila
-        Dados *tmp = fila->head;
-        //percorre a fila ate encontrar o ultimo elemento
-        while (tmp->prox != NULL)
-        {
-            tmp = tmp->prox;
-        }
-        //insere o elemento novo no final da fila
-        tmp->prox = novo;
+        //insere na fila
+        novo->prev = fila->tail;
+        fila->tail->next = novo;
+        //aponta fim da fila para o último
+        fila->tail = novo;
     }
     fila->quantidade++;
 }
 
-Dados *peekDados(FilaDados *fila)
+extern Dados *peekDados(FilaDados *fila)
 {
     sem_wait(&fila->semaforo);
 
@@ -112,47 +112,31 @@ Dados *peekDados(FilaDados *fila)
 /**
  * Remove item na posicao desejada
  */
-bool removeDados(Dados *dado, FilaDados *fila)
+extern bool removeDoInicio(Dados *dado, FilaDados *fila)
 {
     sem_wait(&fila->semaforo);
-    //cria nova struct e aponta para o primeiro valor da fila
-    Dados *anterior = fila->head,
-          //cria nova struct e aponta para o segundo valor
-        *proxima = anterior->prox;
-
-    //caso for o primeiro elemento
-    if (dado == anterior)
-    {
-        fila->head = proxima;
-        //libera memoria
-        free(anterior);
+    
+    if(dado == fila->head){
+        fila->head = dado->next;
     }
-    else
-    {
-        while (proxima != dado)
-        {
-            //desloca para o próximo item
-            anterior = proxima;
-            proxima = proxima->prox;
-            //verifica se chegou no fim da fila
-            if (proxima == NULL)
-            {
-                return false;
-            }
-        }
-        //aponta para o elemento apontado pelo proximo elemento da fila;
-        anterior->prox = proxima->prox;
-        //libera memoria
-        free(proxima);
+    else{
+        #if defined(DEBUG)
+            printf("Não é o primeiro nó!");
+        #endif
+        sem_post(&fila->semaforo);
+        return false;
     }
-
+    
+    dado->next == NULL;
+    free(dado);
+    
     fila->quantidade--;
     /*Libera semaforo*/
     sem_post(&fila->semaforo);
     return true;
 }
 
-void imprimeFilaDados(FilaDados *fila)
+extern void imprimeFilaDados(FilaDados *fila)
 {
     sem_wait(&fila->semaforo);
 
@@ -168,14 +152,14 @@ void imprimeFilaDados(FilaDados *fila)
     while (tmp != NULL)
     {
         mostraDados(tmp);
-        tmp = tmp->prox;
+        tmp = tmp->next;
     }
     printf("\n");
     /*Libera semaforo*/
     sem_post(&fila->semaforo);
 }
 
-void mostraDados(Dados *dado)
+extern void mostraDados(Dados *dado)
 {
     printf("\n--------[ %p ]---------\n",dado);
     printf("idRede: %d\n", dado->idRede);
@@ -185,7 +169,7 @@ void mostraDados(Dados *dado)
     printf("timestamp: %d\n", (int)dado->timestamp);
 }
 
-void libera(FilaDados *fila)
+extern void libera(FilaDados *fila)
 {
     if (fila->head != NULL)
     {
@@ -193,7 +177,7 @@ void libera(FilaDados *fila)
         atual = fila->head;
         while (atual != NULL)
         {
-            proxDado = atual->prox;
+            proxDado = atual->next;
             free(atual);
             atual = proxDado;
         }

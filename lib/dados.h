@@ -1,6 +1,10 @@
 #ifndef DADOS_H_
 #define DADOS_H_
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
+
 #include <semaphore.h>
 #include <time.h>
 #include <stdbool.h>
@@ -15,7 +19,8 @@ struct No
     unsigned int grandeza;
     float valor;
     time_t timestamp;
-    struct Dados *prox;
+    struct Dados *prev;
+    struct Dados *next;
 };
 
 typedef struct No Dados;
@@ -23,6 +28,7 @@ typedef struct No Dados;
 typedef struct sFilaDados
 {
     Dados *head;
+    Dados *tail;
     int quantidade;
     sem_t semaforo;
 } FilaDados;
@@ -31,12 +37,15 @@ typedef struct sFilaDados
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
-Dados *peekDados(FilaDados *fila);
-bool removeDados(Dados *dado, FilaDados *fila);
-void imprimeFilaDados(FilaDados *fila);
-void mostraDados(Dados *dado);
-void libera(FilaDados *fila);
-FilaDados *iniciaFila();
+extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
+extern Dados *peekDados(FilaDados *fila);
+extern bool removeDoInicio(Dados *dado, FilaDados *fila);
+extern void imprimeFilaDados(FilaDados *fila);
+extern void mostraDados(Dados *dado);
+extern void libera(FilaDados *fila);
+extern FilaDados *iniciaFila();
 
+#ifdef	__cplusplus
+}
+#endif
 #endif /* DADOS_H_ */

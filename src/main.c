@@ -8,9 +8,6 @@
 
 FilaDados *DADOS;
 
-bool validaGrandeza(unsigned int grandeza);
-bool validaTipoGrandeza(unsigned int tipo);
-
 void intHandler(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
@@ -20,7 +17,7 @@ void intHandler(int dummy)
         Dados *tmp;
         tmp = peekDados(DADOS);
         mostraDados(tmp);
-        removeDados(tmp, DADOS);
+        removeDoInicio(tmp, DADOS);
     }
 
     libera(DADOS);
@@ -128,34 +125,4 @@ int main(int argc, char **argv)
     }
 
     return (EXIT_SUCCESS);
-}
-
-bool validaGrandeza(unsigned int grandeza)
-{
-    switch (grandeza)
-    {
-    case temperatura:
-        return true;
-    case umidadeAr:
-        return true;
-    case umidadeSolo:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool validaTipoGrandeza(unsigned int tipo)
-{
-    switch (tipo)
-    {
-    case entradaDigital:
-        return true;
-    case saidaDigital:
-        return true;
-    case entradaAnalogica:
-        return true;
-    default:
-        return false;
-    }
 }

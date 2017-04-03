@@ -1,6 +1,9 @@
 gcc -c ../lib/dados.c -o dados.o 
+gcc -c ../lib/definicoes.c -o definicoes.o 
 ar rv dados.a dados.o
-gcc  main.c -L. dados.a -o main.bin -lm -lrt -lpthread
+ar rv definicoes.a definicoes.o
+gcc  main.c -L. dados.a definicoes.o -o main.bin -lm -lrt -lpthread
 rm dados.a dados.o
+rm definicoes.a definicoes.o
 ./main.bin
 rm main.bin
