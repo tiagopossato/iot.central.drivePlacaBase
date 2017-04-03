@@ -1,3 +1,3 @@
-gcc  main.c -o main.bin -D_REENTRANT -lpthread
+gcc  main.c -o main.bin -lpthread
 ./main.bin
 rm main.bin
