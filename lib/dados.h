@@ -5,12 +5,8 @@
 extern "C" {
 #endif
 
-#include <semaphore.h>
-#include <time.h>
+#include <pthread.h>
 #include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 struct No
 {
@@ -30,7 +26,7 @@ typedef struct sFilaDados
     Dados *head;
     Dados *tail;
     int quantidade;
-    sem_t semaforo;
+    pthread_mutex_t mutex;
 } FilaDados;
 
 /*

@@ -1,5 +1,5 @@
 #include "dados.h"
-#include <semaphore.h>
+#include <pthread.h>
 #include <time.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -21,10 +21,10 @@ extern FilaDados *iniciaFila()
     fila->head = NULL;
     fila->tail = NULL;
     fila->quantidade = 0;
-    if (sem_init(&fila->semaforo, 0, 1) == -1)
+    if (pthread_mutex_init(&fila->mutex, NULL) == -1)
     {
 #if defined(DEBUG)
-        printf("Erro no semáforo!");
+        printf("Erro no mutex!");
 #endif
         return NULL;
     }
@@ -46,13 +46,13 @@ e insere na fila de Dados
 extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
-    sem_wait(&fila->semaforo);
+    pthread_mutex_lock(&fila->mutex);
 
     //cria nova estrutura
     Dados *novo = (Dados *)malloc(sizeof(Dados));
     if (!novo)
     {
-        sem_post(&fila->semaforo);
+        pthread_mutex_unlock(&fila->mutex);
         return false;
     }
     novo->idRede = _idRede;
@@ -65,8 +65,8 @@ extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsign
 
     //Adiciona Dados no final da fila
     adicionaFim(novo, fila);
-    /* libera semaforo */
-    sem_post(&fila->semaforo);
+    /* libera mutex */
+    pthread_mutex_unlock(&fila->mutex);
     return true;
 }
 
@@ -98,13 +98,13 @@ void adicionaFim(Dados *novo, FilaDados *fila)
 
 extern Dados *peekDados(FilaDados *fila)
 {
-    sem_wait(&fila->semaforo);
+    pthread_mutex_lock(&fila->mutex);
 
     //pega o primeiro nó da fila
     Dados *tmp = fila->head;
 
-    /*Libera semaforo*/
-    sem_post(&fila->semaforo);
+    /*Libera mutex*/
+    pthread_mutex_unlock(&fila->mutex);
 
     //retorna o nó
     return tmp;
@@ -114,7 +114,7 @@ extern Dados *peekDados(FilaDados *fila)
  */
 extern bool removeDoInicio(Dados *dado, FilaDados *fila)
 {
-    sem_wait(&fila->semaforo);
+    pthread_mutex_lock(&fila->mutex);
     
     if(dado == fila->head){
         fila->head = dado->next;
@@ -123,7 +123,7 @@ extern bool removeDoInicio(Dados *dado, FilaDados *fila)
         #if defined(DEBUG)
             printf("Não é o primeiro nó!");
         #endif
-        sem_post(&fila->semaforo);
+        pthread_mutex_unlock(&fila->mutex);
         return false;
     }
     
@@ -131,19 +131,19 @@ extern bool removeDoInicio(Dados *dado, FilaDados *fila)
     free(dado);
     
     fila->quantidade--;
-    /*Libera semaforo*/
-    sem_post(&fila->semaforo);
+    /*Libera mutex*/
+    pthread_mutex_unlock(&fila->mutex);
     return true;
 }
 
 extern void imprimeFilaDados(FilaDados *fila)
 {
-    sem_wait(&fila->semaforo);
+    pthread_mutex_lock(&fila->mutex);
 
     if (fila->head == NULL)
     {
-        /*Libera semaforo*/
-        sem_post(&fila->semaforo);
+        /*Libera mutex*/
+        pthread_mutex_unlock(&fila->mutex);
         return;
     }
 
@@ -155,8 +155,8 @@ extern void imprimeFilaDados(FilaDados *fila)
         tmp = tmp->next;
     }
     printf("\n");
-    /*Libera semaforo*/
-    sem_post(&fila->semaforo);
+    /*Libera mutex*/
+    pthread_mutex_unlock(&fila->mutex);
 }
 
 extern void mostraDados(Dados *dado)
