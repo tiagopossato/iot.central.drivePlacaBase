@@ -5,8 +5,7 @@
 #include <sys/un.h>
 #include <stdlib.h>
 
-char *socket_path = "/tmp/placaBase";
-//char *socket_path = "\0hidden";
+char *socket_path = "/tmp/placaBase.socket";
 
 int abreSocket()
 {

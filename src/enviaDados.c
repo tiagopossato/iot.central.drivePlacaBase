@@ -16,12 +16,21 @@ typedef struct sPE
     int portaSerial;
 } ParametrosThreadMonitor;
 
-void enviaMensagem(Saida *dados, int portaSerial);
-
 /*
 Padrão da URI:
 idRede/tipoGrandeza/grandeza/valor
 */
+void enviaMensagem(Saida *dados, int portaSerial)
+{
+    if (dados == NULL)
+        return;
+    char uri[64];
+    sprintf(uri, "%d/%d/%d/%f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
+    printf("Enviando: %s", uri);
+    write(portaSerial, uri, strlen(uri));
+    dados->ttl--;
+}
+
 void *monitoraMensagens(void *args)
 {
     //pega os parametros enviados por argumento para a thread
@@ -44,32 +53,21 @@ void *monitoraMensagens(void *args)
         Saida *tmp = fila->head;
         while (tmp != NULL)
         {
-            if (tmp->ttl <= 0)
+            if (tmp->ttl > 0)
+            {
+                printf("Reenviando...\n");
+                enviaMensagem(tmp, params->portaSerial);
+            }
+            else
             {
                 printf("Mensagem: [%d/%d/%d/%f] não foi enviada!\n", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
                 /*Libera mutex pois é usado na função apaga saida*/
                 pthread_mutex_unlock(&fila->mutex);
                 apagaNoSaida(tmp, fila);
             }
-            else
-            {
-                printf("Reenviando...\n");
-                enviaMensagem(tmp, params->portaSerial);
-            }
             tmp = (Saida *)tmp->next;
         }
         /*Libera mutex*/
         pthread_mutex_unlock(&fila->mutex);
     }
-}
-
-void enviaMensagem(Saida *dados, int portaSerial)
-{
-    if (dados == NULL)
-        return;
-    char uri[64];
-    sprintf(uri, "%d/%d/%d/%f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
-    printf("Enviando: %s", uri);
-    write(portaSerial, uri, strlen(uri));
-    dados->ttl--;
 }

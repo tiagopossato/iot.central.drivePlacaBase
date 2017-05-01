@@ -17,6 +17,7 @@ extern int buscaCaracter(char *buf, char caracter)
 }
 extern float extraiParte(char *entrada)
 {
+    //printf("entrada: %s[%d]\n", entrada,strlen(entrada));
     char i = 0;
     char saida[6];
     memset(saida, '\r', sizeof(saida));
