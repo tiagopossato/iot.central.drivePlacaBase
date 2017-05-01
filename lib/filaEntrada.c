@@ -1,4 +1,6 @@
 #include "filaEntrada.h"
+#include "definicoes.h"
+#include "util.h"
 #include <pthread.h>
 #include <time.h>
 #include <stdbool.h>
@@ -43,7 +45,7 @@ extern FilaDados *iniciaFila()
 Cria uma estrutura do tipo Dados com os parâmetros recebidos
 e insere na fila de Dados
 */
-extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila)
+extern bool insereDados(char *uri, FilaDados *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
     pthread_mutex_lock(&fila->mutex);
@@ -55,13 +57,30 @@ extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsign
         pthread_mutex_unlock(&fila->mutex);
         return false;
     }
-    novo->idRede = _idRede;
-    novo->tipoGrandeza = _tipoGrandeza;
-    novo->grandeza = _grandeza;
-    novo->valor = _valor;
+    novo->idRede = (unsigned int)extraiParte(uri);
+    novo->tipoGrandeza = (unsigned int)extraiParte(uri);
+    novo->grandeza = (unsigned int)extraiParte(uri);
+    novo->valor = extraiParte(uri);
     novo->timestamp = time(0);
     novo->prev = NULL;
     novo->next = NULL;
+
+    //VALIDA TIPO DA GRANDEZA
+    if (!validaTipoGrandeza(novo->tipoGrandeza))
+    {
+        printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
+        free(novo);
+        pthread_mutex_unlock(&fila->mutex);
+        return false;
+    }
+    //VALIDA GRANDEZA
+    if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
+    {
+        printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
+        free(novo);
+        pthread_mutex_unlock(&fila->mutex);
+        return false;
+    }
 
     //Adiciona Dados no final da fila
     adicionaFim(novo, fila);
@@ -115,21 +134,23 @@ extern Dados *peekDados(FilaDados *fila)
 extern bool removeDoInicio(Dados *dado, FilaDados *fila)
 {
     pthread_mutex_lock(&fila->mutex);
-    
-    if(dado == fila->head){
+
+    if (dado == fila->head)
+    {
         fila->head = (Dados *)dado->next;
     }
-    else{
-        #if defined(DEBUG)
-            printf("Não é o primeiro nó!");
-        #endif
+    else
+    {
+#if defined(DEBUG)
+        printf("Não é o primeiro nó!");
+#endif
         pthread_mutex_unlock(&fila->mutex);
         return false;
     }
-    
+
     dado->next = NULL;
     free(dado);
-    
+
     fila->quantidade--;
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
@@ -161,7 +182,9 @@ extern void imprimeFilaDados(FilaDados *fila)
 
 extern void mostraDados(Dados *dado)
 {
-    printf("\n--------[ %p ]---------\n",dado);
+    
+    printf("\n--------[ %p ]---------\n", dado);
+    if(dado == NULL) return;
     printf("idRede: %d\n", dado->idRede);
     printf("tipoGrandeza: %d\n", dado->tipoGrandeza);
     printf("grandeza: %d\n", dado->grandeza);

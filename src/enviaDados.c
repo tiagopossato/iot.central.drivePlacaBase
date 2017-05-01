@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "../lib/filaEntrada.h"
+#include <unistd.h>
 #include "../lib/filaSaida.h"
 #include "../lib/definicoes.h"
 #include "../lib/util.h"
@@ -28,12 +28,12 @@ void *recebeDados(void *args)
     FilaDados *fila = params->fila;
     //pega o descritor da porta serial
     int fd = params->portaSerial;
-    /*
+
     unsigned int idRede;
     unsigned int tipoGrandeza;
     unsigned int grandeza;
     float valor;
-*/
+
     char buf[64];
     char uri[64];
     int inicio = -1;
@@ -56,10 +56,36 @@ void *recebeDados(void *args)
             }
             //extração 1 dos dados
             memcpy(uri, &buf[inicio + 1], fim - (inicio + 1));
-            
-            printf("\n++++++++++++++++++\n%s\n", uri);
-            insereDados(uri, fila);
-            mostraDados(fila->tail);
         }
+        else
+        {
+            continue;
+        }
+
+        printf("\n++++++++++++++++++\n%s", uri);
+        //--------------LE O ID DE REDE-----------------------------------
+        idRede = (unsigned int)extraiParte(uri);
+        //--------------LE O TIPO DE GRANDEZA-----------------------------------
+        tipoGrandeza = (unsigned int)extraiParte(uri);
+        //-------------LE A GRANDEZA------------------------------------
+        grandeza = (unsigned int)extraiParte(uri);
+        //------------LE O VALOR DA GRANDEZA-------------------------------------
+        valor = extraiParte(uri);
+        //-------------------------------------------------
+        //VALIDA TIPO DA GRANDEZA
+        if (!validaTipoGrandeza(tipoGrandeza))
+        {
+            printf("Tipo de grandeza: %d não reconhecido!\n", tipoGrandeza);
+            continue;
+        }
+        //VALIDA GRANDEZA
+        if (!validaGrandeza(grandeza, tipoGrandeza))
+        {
+            printf("Grandeza: %d não reconhecida!\n", grandeza);
+            continue;
+        }
+
+        insereDados(idRede, tipoGrandeza, grandeza, valor, fila);
+        mostraDados(fila->tail);
     }
 }

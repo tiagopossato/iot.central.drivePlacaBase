@@ -46,6 +46,18 @@ e insere na fila de Saida
 extern bool insereDadosSaida(char *uri, FilaSaida *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
+    char tmp[64];
+    //verifica o início e final da string de dados
+    int inicio = buscaCaracter(uri, '[');
+    int fim = buscaCaracter(uri, ']');
+    //validação 1 da entrada
+    if (inicio < 0 || fim <= inicio)
+    {
+        return false;
+    }
+    //extração 1 dos dados
+    memcpy(tmp, &uri[inicio + 1], fim - (inicio + 1));
+
     pthread_mutex_lock(&fila->mutex);
 
     //cria nova estrutura
@@ -55,13 +67,30 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         pthread_mutex_unlock(&fila->mutex);
         return false;
     }
-    novo->idRede = (unsigned int)extraiParte(uri);
-    novo->tipoGrandeza = (unsigned int)extraiParte(uri);
-    novo->grandeza = (unsigned int)extraiParte(uri);
-    novo->valor = extraiParte(uri);
-    novo->ttl = (int)extraiParte(uri);
+    novo->idRede = (unsigned int)extraiParte(tmp);
+    novo->tipoGrandeza = (unsigned int)extraiParte(tmp);
+    novo->grandeza = (unsigned int)extraiParte(tmp);
+    novo->valor = extraiParte(tmp);
+    novo->ttl = TTL_SAIDA;
     novo->prev = NULL;
     novo->next = NULL;
+
+    //VALIDA TIPO DA GRANDEZA
+    if (!validaTipoGrandeza(novo->tipoGrandeza))
+    {
+        printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
+        free(novo);
+        pthread_mutex_unlock(&fila->mutex);
+        return false;
+    }
+    //VALIDA GRANDEZA
+    if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
+    {
+        printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
+        free(novo);
+        pthread_mutex_unlock(&fila->mutex);
+        return false;
+    }
 
     //Adiciona Dados no final da fila
     adicionaFimSaida(novo, fila);
@@ -151,7 +180,7 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
             tmp = (Saida *)tmp->next;
         }
     }
-    
+
     Saida *prev = (Saida *)tmp->prev;
     prev->next = tmp->next;
 
@@ -191,6 +220,8 @@ extern void imprimeFilaSaida(FilaSaida *fila)
 extern void mostraNoSaida(Saida *no)
 {
     printf("\n--------[ %p ]---------\n", no);
+    if (no == NULL)
+        return;
     printf("idRede: %d\n", no->idRede);
     printf("tipoGrandeza: %d\n", no->tipoGrandeza);
     printf("grandeza: %d\n", no->grandeza);

@@ -8,7 +8,7 @@ extern "C" {
 #include <pthread.h>
 #include <stdbool.h>
 
-typedef struct No
+typedef struct NoEntrada
 {
     unsigned int idRede;
     unsigned int tipoGrandeza;                                                                                                                                                     
@@ -33,7 +33,8 @@ typedef struct sFilaDados
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
+//extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
+extern bool insereDados(char *uri, FilaDados *fila);
 extern Dados *peekDados(FilaDados *fila);
 extern bool removeDoInicio(Dados *dado, FilaDados *fila);
 extern void imprimeFilaDados(FilaDados *fila);

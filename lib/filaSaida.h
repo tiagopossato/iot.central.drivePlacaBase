@@ -8,7 +8,9 @@ extern "C" {
 #include <stdbool.h>
 #include <pthread.h>
 
-typedef struct No
+#define TTL_SAIDA 5
+
+typedef struct NoSaida
 {
     unsigned int idRede;
     unsigned int tipoGrandeza;
