@@ -12,11 +12,12 @@
 #include "enviaDados.c"
 #include "portaSerial.c"
 #include "socketServer.c"
+#include "salvaBanco.c"
 
 FilaEntrada *ENTRADA;
 FilaSaida *SAIDA;
 
-void intHandler(int dummy)
+void encerraExecucao(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
 
@@ -28,7 +29,6 @@ void intHandler(int dummy)
         mostraNoEntrada(tmp);
         removeDoInicio(tmp, ENTRADA);
     }
-
     liberaFilaEntrada(ENTRADA);
     liberaFilaSaida(SAIDA);
     exit(EXIT_SUCCESS);
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    signal(SIGINT, intHandler);
+    signal(SIGINT, encerraExecucao);
 
     char *portname = "/dev/ttyUSB0";
     int portaSerial = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
@@ -62,7 +62,6 @@ int main(int argc, char **argv)
     set_interface_attribs(portaSerial, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
     set_blocking(portaSerial, 1);                   // set blocking
 
-    
     ParametrosThreadRecebe paramsRecebe;
     paramsRecebe.filaEntrada = ENTRADA;
     paramsRecebe.filaSaida = SAIDA;
@@ -70,12 +69,16 @@ int main(int argc, char **argv)
     pthread_t thRecebeDados;
     pthread_create(&thRecebeDados, NULL, recebeDados, &paramsRecebe);
 
-    
     ParametrosThreadMonitor paramsMonitor;
     paramsMonitor.filaSaida = SAIDA;
     paramsMonitor.portaSerial = portaSerial;
     pthread_t thMonitor;
     pthread_create(&thMonitor, NULL, monitoraMensagens, &paramsMonitor);
+
+    ParametrosSalvaBanco paramsSalvaBanco;
+    paramsSalvaBanco.filaEntrada = ENTRADA;
+    pthread_t thSalvaBanco;
+    pthread_create(&thSalvaBanco, NULL, salvaBanco, &paramsSalvaBanco);
 
     //Abre socket para receber comandos
     int socket = abreSocket();
@@ -91,7 +94,7 @@ int main(int argc, char **argv)
     while (1)
     {
         memset(buf, '\0', sizeof(buf));
-        if ((cl = accept(socket, NULL, NULL)) == -1)//chamada bloqueante
+        if ((cl = accept(socket, NULL, NULL)) == -1) //chamada bloqueante
         {
             perror("accept error");
             continue;

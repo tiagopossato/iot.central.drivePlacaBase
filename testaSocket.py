@@ -12,7 +12,7 @@ except socket.error as msg:
     print(msg)
     sys.exit(1)
 
-try:  
+try:
     # Send data
     message = '[3/3202/3303/]'
     enviados = sock.send(bytes(message, 'UTF-8'))

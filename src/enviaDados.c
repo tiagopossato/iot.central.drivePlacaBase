@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include <unistd.h>
 #include "../lib/filaSaida.h"
 #include "../lib/definicoes.h"
 #include "../lib/util.h"

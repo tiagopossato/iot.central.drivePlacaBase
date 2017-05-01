@@ -1,1 +1,5 @@
-1 - gerenciar as conexões no socket com Thread
+Thread para salvar no banco
+
+Disparar os alarmes
+
+Gerenciar as conexões no socket de entrada com Thread
