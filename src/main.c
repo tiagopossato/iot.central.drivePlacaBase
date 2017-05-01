@@ -13,32 +13,33 @@
 #include "portaSerial.c"
 #include "socketServer.c"
 
-FilaEntrada *DADOS;
+FilaEntrada *ENTRADA;
 FilaSaida *SAIDA;
 
 void intHandler(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
 
-    int i = DADOS->quantidade;
+    int i = ENTRADA->quantidade;
     for (; i > 0; i--)
     {
         Entrada *tmp;
-        tmp = peekDados(DADOS);
+        tmp = peekDados(ENTRADA);
         mostraNoEntrada(tmp);
-        removeDoInicio(tmp, DADOS);
+        removeDoInicio(tmp, ENTRADA);
     }
 
-    libera(DADOS);
+    liberaFilaEntrada(ENTRADA);
+    liberaFilaSaida(SAIDA);
     exit(EXIT_SUCCESS);
 }
 
 int main(int argc, char **argv)
 {
-    DADOS = iniciaFila();
-    if (DADOS == NULL)
+    ENTRADA = iniciaFila();
+    if (ENTRADA == NULL)
     {
-        printf("Não pode iniciar a fila de dados!\n");
+        printf("Não pode iniciar a fila de entrada!\n");
         exit(EXIT_FAILURE);
     }
 
@@ -61,14 +62,20 @@ int main(int argc, char **argv)
     set_interface_attribs(portaSerial, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
     set_blocking(portaSerial, 1);                   // set blocking
 
+    
+    ParametrosThreadRecebe paramsRecebe;
+    paramsRecebe.filaEntrada = ENTRADA;
+    paramsRecebe.filaSaida = SAIDA;
+    paramsRecebe.portaSerial = portaSerial;
     pthread_t thRecebeDados;
+    pthread_create(&thRecebeDados, NULL, recebeDados, &paramsRecebe);
 
-    ParametrosThreadRecebe params;
-    params.filaEntrada = DADOS;
-    params.filaSaida = SAIDA;
-    params.portaSerial = portaSerial;
-
-    pthread_create(&thRecebeDados, NULL, recebeDados, &params);
+    
+    ParametrosThreadMonitor paramsMonitor;
+    paramsMonitor.filaSaida = SAIDA;
+    paramsMonitor.portaSerial = portaSerial;
+    pthread_t thMonitor;
+    pthread_create(&thMonitor, NULL, monitoraMensagens, &paramsMonitor);
 
     //Abre socket para receber comandos
     int socket = abreSocket();
@@ -117,5 +124,6 @@ int main(int argc, char **argv)
     }
 
     pthread_join(thRecebeDados, NULL);
+    pthread_join(thMonitor, NULL);
     return (EXIT_SUCCESS);
 }

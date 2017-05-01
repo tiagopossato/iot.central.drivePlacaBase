@@ -40,7 +40,7 @@ extern Entrada *peekDados(FilaEntrada *fila);
 extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila);
 extern void imprimeFilaDados(FilaEntrada *fila);
 extern void mostraNoEntrada(Entrada *dado);
-extern void libera(FilaEntrada *fila);
+extern void liberaFilaEntrada(FilaEntrada *fila);
 extern FilaEntrada *iniciaFila();
 
 #ifdef	__cplusplus

@@ -14,7 +14,9 @@ typedef struct sPE
 {
     FilaSaida *filaSaida;
     int portaSerial;
-} ParametrosThreadEnvia;
+} ParametrosThreadMonitor;
+
+void enviaMensagem(Saida *dados, int portaSerial);
 
 /*
 Padrão da URI:
@@ -23,11 +25,42 @@ idRede/tipoGrandeza/grandeza/valor
 void *monitoraMensagens(void *args)
 {
     //pega os parametros enviados por argumento para a thread
-    ParametrosThreadEnvia *params = (ParametrosThreadEnvia *)args;
+    ParametrosThreadMonitor *params = (ParametrosThreadMonitor *)args;
     //pega a fila de dados
     FilaSaida *fila = params->filaSaida;
-    //pega o descritor da porta serial
-    int fd = params->portaSerial;
+    //tenta enviar as mensagens da fila de saída
+    while (true)
+    {
+        //aguarda 2 segundos
+        sleep(2);
+        pthread_mutex_lock(&fila->mutex);
+        if (fila->head == NULL)
+        {
+            /*Libera mutex*/
+            pthread_mutex_unlock(&fila->mutex);
+            continue;
+        }
+        printf("Timestamp: %d\n", time(0));
+        Saida *tmp = fila->head;
+        while (tmp != NULL)
+        {
+            if (tmp->ttl <= 0)
+            {
+                printf("Mensagem: [%d/%d/%d/%f] não foi enviada!\n", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
+                /*Libera mutex pois é usado na função apaga saida*/
+                pthread_mutex_unlock(&fila->mutex);
+                apagaNoSaida(tmp, fila);
+            }
+            else
+            {
+                printf("Reenviando...\n");
+                enviaMensagem(tmp, params->portaSerial);
+            }
+            tmp = (Saida *)tmp->next;
+        }
+        /*Libera mutex*/
+        pthread_mutex_unlock(&fila->mutex);
+    }
 }
 
 void enviaMensagem(Saida *dados, int portaSerial)
@@ -36,6 +69,7 @@ void enviaMensagem(Saida *dados, int portaSerial)
         return;
     char uri[64];
     sprintf(uri, "%d/%d/%d/%f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
+    printf("Enviando: %s", uri);
     write(portaSerial, uri, strlen(uri));
     dados->ttl--;
 }

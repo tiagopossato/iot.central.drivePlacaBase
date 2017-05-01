@@ -196,7 +196,7 @@ extern void mostraNoEntrada(Entrada *dado)
     printf("timestamp: %d\n", (int)dado->timestamp);
 }
 
-extern void libera(FilaEntrada *fila)
+extern void liberaFilaEntrada(FilaEntrada *fila)
 {
     if (fila->head != NULL)
     {
