@@ -5,16 +5,17 @@
 #include <signal.h>
 #include <pthread.h>
 
-#include "../lib/dados.h"
+#include "../lib/filaEntrada.h"
 #include "../lib/definicoes.h"
 #include "recebeDados.c"
-//#include "portaSerial.c"
+#include "portaSerial.c"
 
 FilaDados *DADOS;
 
 void intHandler(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
+    
     int i = DADOS->quantidade;
     for (; i > 0; i--)
     {
@@ -23,23 +24,14 @@ void intHandler(int dummy)
         mostraDados(tmp);
         removeDoInicio(tmp, DADOS);
     }
-
+    
     libera(DADOS);
     exit(EXIT_SUCCESS);
 }
 
-/*
-Padrão da URI:
-idRede/tipoGrandeza/grandeza/valor
-*/
-
-/*
- * Testando a biblioteca
- */
 int main(int argc, char **argv)
 {
     signal(SIGINT, intHandler);
-
 
     char *portname = "/dev/ttyUSB0";
     int fd = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
@@ -50,7 +42,6 @@ int main(int argc, char **argv)
     }
     set_interface_attribs(fd, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
     set_blocking(fd, 1);                   // set blocking
-
 
     pthread_t thRecebeDados;
     DADOS = iniciaFila();

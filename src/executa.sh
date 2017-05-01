@@ -1,10 +1,19 @@
-gcc -c ../lib/dados.c -o dados.o 
-gcc -c ../lib/definicoes.c -o definicoes.o 
-ar rv dados.a dados.o
+gcc -c ../lib/filaEntrada.c -o filaEntrada.o
+gcc -c ../lib/filaSaida.c -o filaSaida.o
+gcc -c ../lib/definicoes.c -o definicoes.o
+gcc -c ../lib/util.c -o util.o
+
+ar rv filaEntrada.a filaEntrada.o
 ar rv definicoes.a definicoes.o
-gcc  main.c -L. dados.a definicoes.o -o main.bin -lm -lrt -lpthread
-rm dados.a dados.o
+ar rv filaSaida.a filaSaida.o
+ar rv util.a util.o
+
+gcc  main.c -L. filaEntrada.a filaSaida.a definicoes.a util.a -o main.bin -lm -lrt -lpthread
+
+rm filaEntrada.a filaEntrada.o
 rm definicoes.a definicoes.o
+rm filaSaida.a filaSaida.o
+rm util.a util.o
 
 ./main.bin
 

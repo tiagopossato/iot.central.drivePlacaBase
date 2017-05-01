@@ -1,5 +1,5 @@
-#ifndef DADOS_H_
-#define DADOS_H_
+#ifndef FILAENTRADA_H_
+#define FILAENTRADA_H_
 
 #ifdef	__cplusplus
 extern "C" {
@@ -8,7 +8,7 @@ extern "C" {
 #include <pthread.h>
 #include <stdbool.h>
 
-struct No
+typedef struct No
 {
     unsigned int idRede;
     unsigned int tipoGrandeza;                                                                                                                                                     
@@ -17,9 +17,9 @@ struct No
     time_t timestamp;
     struct Dados *prev;
     struct Dados *next;
-};
+}Dados;
 
-typedef struct No Dados;
+//typedef struct No Dados;
 
 typedef struct sFilaDados
 {
@@ -44,4 +44,4 @@ extern FilaDados *iniciaFila();
 #ifdef	__cplusplus
 }
 #endif
-#endif /* DADOS_H_ */
+#endif /* FILAENTRADA_H_ */

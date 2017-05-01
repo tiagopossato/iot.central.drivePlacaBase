@@ -1,4 +1,4 @@
-#include "dados.h"
+#include "filaEntrada.h"
 #include <pthread.h>
 #include <time.h>
 #include <stdbool.h>
@@ -60,7 +60,7 @@ extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsign
     novo->grandeza = _grandeza;
     novo->valor = _valor;
     novo->timestamp = time(0);
-    novo->next = NULL;
+    novo->prev = NULL;
     novo->next = NULL;
 
     //Adiciona Dados no final da fila
@@ -76,7 +76,7 @@ extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsign
  */
 void adicionaFim(Dados *novo, FilaDados *fila)
 {
-    printf("Tamanho da fila: %d\n", fila->quantidade);
+    //printf("Tamanho da fila: %d\n", fila->quantidade);
     //verifica se a fila esta vazia
     if (fila->head == NULL)
     {
@@ -117,7 +117,7 @@ extern bool removeDoInicio(Dados *dado, FilaDados *fila)
     pthread_mutex_lock(&fila->mutex);
     
     if(dado == fila->head){
-        fila->head = dado->next;
+        fila->head = (Dados *)dado->next;
     }
     else{
         #if defined(DEBUG)
@@ -127,7 +127,7 @@ extern bool removeDoInicio(Dados *dado, FilaDados *fila)
         return false;
     }
     
-    dado->next == NULL;
+    dado->next = NULL;
     free(dado);
     
     fila->quantidade--;
@@ -152,7 +152,7 @@ extern void imprimeFilaDados(FilaDados *fila)
     while (tmp != NULL)
     {
         mostraDados(tmp);
-        tmp = tmp->next;
+        tmp = (Dados *)tmp->next;
     }
     printf("\n");
     /*Libera mutex*/
@@ -177,7 +177,7 @@ extern void libera(FilaDados *fila)
         atual = fila->head;
         while (atual != NULL)
         {
-            proxDado = atual->next;
+            proxDado = (Dados *)atual->next;
             free(atual);
             atual = proxDado;
         }
