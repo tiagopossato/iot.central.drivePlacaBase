@@ -15,32 +15,32 @@ typedef struct NoEntrada
     unsigned int grandeza;
     float valor;
     time_t timestamp;
-    struct Dados *prev;
-    struct Dados *next;
-}Dados;
+    struct Entrada *prev;
+    struct Entrada *next;
+}Entrada;
 
-//typedef struct No Dados;
+//typedef struct No Entrada;
 
 typedef struct sFilaDados
 {
-    Dados *head;
-    Dados *tail;
+    Entrada *head;
+    Entrada *tail;
     int quantidade;
     pthread_mutex_t mutex;
-} FilaDados;
+} FilaEntrada;
 
 /*
  * Todas as funcoes publicas devem ser protegidas pelo semaforo
  * de controle de acesso aos Dados
  */
-//extern bool insereDados(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaDados *fila);
-extern bool insereDados(char *uri, FilaDados *fila);
-extern Dados *peekDados(FilaDados *fila);
-extern bool removeDoInicio(Dados *dado, FilaDados *fila);
-extern void imprimeFilaDados(FilaDados *fila);
-extern void mostraDados(Dados *dado);
-extern void libera(FilaDados *fila);
-extern FilaDados *iniciaFila();
+//extern bool insereDadosEntrada(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaEntrada *fila);
+extern bool insereDadosEntrada(char *uri, FilaEntrada *fila);
+extern Entrada *peekDados(FilaEntrada *fila);
+extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila);
+extern void imprimeFilaDados(FilaEntrada *fila);
+extern void mostraNoEntrada(Entrada *dado);
+extern void libera(FilaEntrada *fila);
+extern FilaEntrada *iniciaFila();
 
 #ifdef	__cplusplus
 }

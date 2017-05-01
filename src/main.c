@@ -12,7 +12,7 @@
 #include "portaSerial.c"
 #include "socketServer.c"
 
-FilaDados *DADOS;
+FilaEntrada *DADOS;
 FilaSaida *SAIDA;
 
 void intHandler(int dummy)
@@ -22,9 +22,9 @@ void intHandler(int dummy)
     int i = DADOS->quantidade;
     for (; i > 0; i--)
     {
-        Dados *tmp;
+        Entrada *tmp;
         tmp = peekDados(DADOS);
-        mostraDados(tmp);
+        mostraNoEntrada(tmp);
         removeDoInicio(tmp, DADOS);
     }
 
@@ -62,8 +62,8 @@ int main(int argc, char **argv)
 
     pthread_t thRecebeDados;
 
-    ParametrosRecebe params;
-    params.fila = DADOS;
+    ParametrosThreadRecebe params;
+    params.filaEntrada = DADOS;
     params.portaSerial = fd;
 
     pthread_create(&thRecebeDados, NULL, recebeDados, &params);

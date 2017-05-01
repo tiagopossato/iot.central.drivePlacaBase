@@ -10,11 +10,11 @@
 #include <unistd.h> /* UNIX standard function definitions */
 #include <fcntl.h>  /* File control definitions */
 
-typedef struct sPR
+typedef struct sPE
 {
-    FilaDados *fila;
+    FilaSaida *filaSaida;
     int portaSerial;
-} ParametrosRecebe;
+} ParametrosThreadEnvia;
 
 /*
 Padrão da URI:
@@ -23,9 +23,9 @@ idRede/tipoGrandeza/grandeza/valor
 void *recebeDados(void *args)
 {
     //pega os parametros enviados por argumento para a thread
-    ParametrosRecebe *params = (ParametrosRecebe *)args;
+    ParametrosThreadEnvia *params = (ParametrosThreadEnvia *)args;
     //pega a fila de dados
-    FilaDados *fila = params->fila;
+    FilaEntrada *fila = params->fila;
     //pega o descritor da porta serial
     int fd = params->portaSerial;
 
@@ -85,7 +85,7 @@ void *recebeDados(void *args)
             continue;
         }
 
-        insereDados(idRede, tipoGrandeza, grandeza, valor, fila);
-        mostraDados(fila->tail);
+        insereDadosEntrada(idRede, tipoGrandeza, grandeza, valor, fila);
+        mostraNoEntrada(fila->tail);
     }
 }

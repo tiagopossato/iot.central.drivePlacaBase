@@ -11,15 +11,15 @@
 #define DEBUG
 
 //Função privada para adicioar elemento no final da fila
-void adicionaFim(Dados *novo, FilaDados *fila);
+void adicionaFim(Entrada *novo, FilaEntrada *fila);
 
 /**
  *  Inicia todos os recursos da fila
  */
-extern FilaDados *iniciaFila()
+extern FilaEntrada *iniciaFila()
 {
-    FilaDados *fila;
-    fila = (FilaDados *)malloc(sizeof(FilaDados));
+    FilaEntrada *fila;
+    fila = (FilaEntrada *)malloc(sizeof(FilaEntrada));
     fila->head = NULL;
     fila->tail = NULL;
     fila->quantidade = 0;
@@ -45,13 +45,13 @@ extern FilaDados *iniciaFila()
 Cria uma estrutura do tipo Dados com os parâmetros recebidos
 e insere na fila de Dados
 */
-extern bool insereDados(char *uri, FilaDados *fila)
+extern bool insereDadosEntrada(char *uri, FilaEntrada *fila)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
     pthread_mutex_lock(&fila->mutex);
 
     //cria nova estrutura
-    Dados *novo = (Dados *)malloc(sizeof(Dados));
+    Entrada *novo = (Entrada *)malloc(sizeof(Entrada));
     if (!novo)
     {
         pthread_mutex_unlock(&fila->mutex);
@@ -93,7 +93,7 @@ extern bool insereDados(char *uri, FilaDados *fila)
  * Adiciona novos Dados no final da fila
  * @param novo Estrutura do tipo Dados
  */
-void adicionaFim(Dados *novo, FilaDados *fila)
+void adicionaFim(Entrada *novo, FilaEntrada *fila)
 {
     //printf("Tamanho da fila: %d\n", fila->quantidade);
     //verifica se a fila esta vazia
@@ -115,12 +115,12 @@ void adicionaFim(Dados *novo, FilaDados *fila)
     fila->quantidade++;
 }
 
-extern Dados *peekDados(FilaDados *fila)
+extern Entrada *peekDados(FilaEntrada *fila)
 {
     pthread_mutex_lock(&fila->mutex);
 
     //pega o primeiro nó da fila
-    Dados *tmp = fila->head;
+    Entrada *tmp = fila->head;
 
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
@@ -131,13 +131,13 @@ extern Dados *peekDados(FilaDados *fila)
 /**
  * Remove item na posicao desejada
  */
-extern bool removeDoInicio(Dados *dado, FilaDados *fila)
+extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila)
 {
     pthread_mutex_lock(&fila->mutex);
 
     if (dado == fila->head)
     {
-        fila->head = (Dados *)dado->next;
+        fila->head = (Entrada *)dado->next;
     }
     else
     {
@@ -157,7 +157,7 @@ extern bool removeDoInicio(Dados *dado, FilaDados *fila)
     return true;
 }
 
-extern void imprimeFilaDados(FilaDados *fila)
+extern void imprimeFilaDados(FilaEntrada *fila)
 {
     pthread_mutex_lock(&fila->mutex);
 
@@ -168,19 +168,19 @@ extern void imprimeFilaDados(FilaDados *fila)
         return;
     }
 
-    Dados *tmp = fila->head;
+    Entrada *tmp = fila->head;
     printf("\nFila de DADOS:\n");
     while (tmp != NULL)
     {
-        mostraDados(tmp);
-        tmp = (Dados *)tmp->next;
+        mostraNoEntrada(tmp);
+        tmp = (Entrada *)tmp->next;
     }
     printf("\n");
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
 }
 
-extern void mostraDados(Dados *dado)
+extern void mostraNoEntrada(Entrada *dado)
 {
     
     printf("\n--------[ %p ]---------\n", dado);
@@ -192,15 +192,15 @@ extern void mostraDados(Dados *dado)
     printf("timestamp: %d\n", (int)dado->timestamp);
 }
 
-extern void libera(FilaDados *fila)
+extern void libera(FilaEntrada *fila)
 {
     if (fila->head != NULL)
     {
-        Dados *proxDado, *atual;
+        Entrada *proxDado, *atual;
         atual = fila->head;
         while (atual != NULL)
         {
-            proxDado = (Dados *)atual->next;
+            proxDado = (Entrada *)atual->next;
             free(atual);
             atual = proxDado;
         }
