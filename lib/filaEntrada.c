@@ -1,9 +1,7 @@
 #include "filaEntrada.h"
 #include "definicoes.h"
 #include "util.h"
-#include <pthread.h>
 #include <time.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,16 +43,16 @@ extern FilaEntrada *iniciaFila()
 Cria uma estrutura do tipo Dados com os parâmetros recebidos
 e insere na fila de Dados
 */
-extern bool insereDadosEntrada(char *uri, FilaEntrada *fila)
+extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *filaSaida)
 {
     /*TODO: Validar os Dados antes de inserir na fila*/
-    pthread_mutex_lock(&fila->mutex);
+    pthread_mutex_lock(&filaEntrada->mutex);
 
     //cria nova estrutura
     Entrada *novo = (Entrada *)malloc(sizeof(Entrada));
     if (!novo)
     {
-        pthread_mutex_unlock(&fila->mutex);
+        pthread_mutex_unlock(&filaEntrada->mutex);
         return false;
     }
     novo->idRede = (unsigned int)extraiParte(uri);
@@ -70,7 +68,7 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *fila)
     {
         printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
         free(novo);
-        pthread_mutex_unlock(&fila->mutex);
+        pthread_mutex_unlock(&filaEntrada->mutex);
         return false;
     }
     //VALIDA GRANDEZA
@@ -78,14 +76,19 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *fila)
     {
         printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
         free(novo);
-        pthread_mutex_unlock(&fila->mutex);
+        pthread_mutex_unlock(&filaEntrada->mutex);
         return false;
     }
 
     //Adiciona Dados no final da fila
-    adicionaFim(novo, fila);
+    adicionaFim(novo, filaEntrada);
     /* libera mutex */
-    pthread_mutex_unlock(&fila->mutex);
+    pthread_mutex_unlock(&filaEntrada->mutex);
+
+    //retira nó corresponte à solicitação na fila de saida
+    Saida *busca = buscaNoSaida(novo->idRede, novo->tipoGrandeza, novo->grandeza, filaSaida);
+    apagaNoSaida(busca, filaSaida);
+
     return true;
 }
 
@@ -182,9 +185,10 @@ extern void imprimeFilaDados(FilaEntrada *fila)
 
 extern void mostraNoEntrada(Entrada *dado)
 {
-    
+
     printf("\n--------[ %p ]---------\n", dado);
-    if(dado == NULL) return;
+    if (dado == NULL)
+        return;
     printf("idRede: %d\n", dado->idRede);
     printf("tipoGrandeza: %d\n", dado->tipoGrandeza);
     printf("grandeza: %d\n", dado->grandeza);

@@ -60,40 +60,55 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
 
     pthread_mutex_lock(&fila->mutex);
 
-    //cria nova estrutura
-    Saida *novo = (Saida *)malloc(sizeof(Saida));
-    if (!novo)
-    {
-        pthread_mutex_unlock(&fila->mutex);
-        return false;
-    }
-    novo->idRede = (unsigned int)extraiParte(tmp);
-    novo->tipoGrandeza = (unsigned int)extraiParte(tmp);
-    novo->grandeza = (unsigned int)extraiParte(tmp);
-    novo->valor = extraiParte(tmp);
-    novo->ttl = TTL_SAIDA;
-    novo->prev = NULL;
-    novo->next = NULL;
+    unsigned int idRede = (unsigned int)extraiParte(tmp);
+    unsigned int tipoGrandeza = (unsigned int)extraiParte(tmp);
+    unsigned int grandeza = (unsigned int)extraiParte(tmp);
+    float valor = extraiParte(tmp);
 
-    //VALIDA TIPO DA GRANDEZA
-    if (!validaTipoGrandeza(novo->tipoGrandeza))
-    {
-        printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
-        free(novo);
-        pthread_mutex_unlock(&fila->mutex);
-        return false;
-    }
-    //VALIDA GRANDEZA
-    if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
-    {
-        printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
-        free(novo);
-        pthread_mutex_unlock(&fila->mutex);
-        return false;
-    }
+    Saida *novo = buscaNoSaida(idRede, tipoGrandeza, grandeza, fila);
 
-    //Adiciona Dados no final da fila
-    adicionaFimSaida(novo, fila);
+    if (novo == NULL)
+    {
+        //cria nova estrutura
+        novo = (Saida *)malloc(sizeof(Saida));
+        if (!novo)
+        {
+            pthread_mutex_unlock(&fila->mutex);
+            return false;
+        }
+        novo->idRede = idRede;
+        novo->tipoGrandeza = tipoGrandeza;
+        novo->grandeza = grandeza;
+        novo->valor = valor;
+        novo->ttl = TTL_SAIDA;
+        novo->prev = NULL;
+        novo->next = NULL;
+
+        //VALIDA TIPO DA GRANDEZA
+        if (!validaTipoGrandeza(novo->tipoGrandeza))
+        {
+            printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
+            free(novo);
+            pthread_mutex_unlock(&fila->mutex);
+            return false;
+        }
+        //VALIDA GRANDEZA
+        if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
+        {
+            printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
+            free(novo);
+            pthread_mutex_unlock(&fila->mutex);
+            return false;
+        }
+
+        //Adiciona Dados no final da fila
+        adicionaFimSaida(novo, fila);
+    }
+    else
+    {
+        novo->valor = valor;
+        novo->ttl = TTL_SAIDA;
+    }
     /* libera mutex */
     pthread_mutex_unlock(&fila->mutex);
     return true;
@@ -142,22 +157,16 @@ extern Saida *peekNoSaida(FilaSaida *fila)
 
 extern Saida *buscaNoSaida(unsigned int idRede, unsigned int tipoGrandeza, unsigned int grandeza, FilaSaida *fila)
 {
-    pthread_mutex_lock(&fila->mutex);
+    printf("Buscando Nó na saida: %d/%d/%d\n", idRede, tipoGrandeza, grandeza);
     Saida *no = fila->head;
-
     while (no != NULL)
     {
         if (no->idRede == idRede && no->tipoGrandeza == tipoGrandeza && no->grandeza == grandeza)
         {
-            /*Libera mutex*/
-            pthread_mutex_unlock(&fila->mutex);
             return no;
         }
         no = (Saida *)no->next;
     }
-
-    /*Libera mutex*/
-    pthread_mutex_unlock(&fila->mutex);
     return NULL;
 }
 /**
@@ -165,9 +174,12 @@ extern Saida *buscaNoSaida(unsigned int idRede, unsigned int tipoGrandeza, unsig
  */
 extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 {
+    if (no == NULL)
+        return true;
+
     pthread_mutex_lock(&fila->mutex);
     Saida *tmp;
-
+    printf("Apagando nó: %p \n", no);
     if (no == fila->head)
     {
         fila->head = (Saida *)no->next;
@@ -179,15 +191,13 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
         {
             tmp = (Saida *)tmp->next;
         }
+        Saida *prev = (Saida *)tmp->prev;
+        prev->next = tmp->next;
     }
-
-    Saida *prev = (Saida *)tmp->prev;
-    prev->next = tmp->next;
 
     no->next == NULL;
     no->prev == NULL;
     free(no);
-
     fila->quantidade--;
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
@@ -197,7 +207,6 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 extern void imprimeFilaSaida(FilaSaida *fila)
 {
     pthread_mutex_lock(&fila->mutex);
-
     if (fila->head == NULL)
     {
         /*Libera mutex*/
@@ -205,8 +214,9 @@ extern void imprimeFilaSaida(FilaSaida *fila)
         return;
     }
 
-    Saida *tmp = fila->head;
     printf("\nFila de SAIDA:\n");
+
+    Saida *tmp = fila->head;
     while (tmp != NULL)
     {
         mostraNoSaida(tmp);

@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#include "filaSaida.h"
 #include <pthread.h>
 #include <stdbool.h>
 
@@ -34,7 +35,7 @@ typedef struct sFilaDados
  * de controle de acesso aos Dados
  */
 //extern bool insereDadosEntrada(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaEntrada *fila);
-extern bool insereDadosEntrada(char *uri, FilaEntrada *fila);
+extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *filaSaida);
 extern Entrada *peekDados(FilaEntrada *fila);
 extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila);
 extern void imprimeFilaDados(FilaEntrada *fila);

@@ -13,6 +13,7 @@
 typedef struct sPR
 {
     FilaEntrada *filaEntrada;
+    FilaSaida *filaSaida;
     int portaSerial;
 } ParametrosThreadRecebe;
 
@@ -25,7 +26,8 @@ void *recebeDados(void *args)
     //pega os parametros enviados por argumento para a thread
     ParametrosThreadRecebe *params = (ParametrosThreadRecebe *)args;
     //pega a fila de dados
-    FilaEntrada *fila = params->filaEntrada;
+    FilaEntrada *filaEntrada = params->filaEntrada;
+    FilaSaida *filaSaida = params->filaSaida;
     //pega o descritor da porta serial
     int fd = params->portaSerial;
     /*
@@ -56,10 +58,11 @@ void *recebeDados(void *args)
             }
             //extração 1 dos dados
             memcpy(uri, &buf[inicio + 1], fim - (inicio + 1));
-            
-            printf("\n++++++++++++++++++\n%s\n", uri);
-            insereDadosEntrada(uri, fila);
-            mostraNoEntrada(fila->tail);
+
+            printf("\n+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
+            insereDadosEntrada(uri, filaEntrada, filaSaida);
+            //mostraNoEntrada(filaEntrada->tail);
+            imprimeFilaSaida(filaSaida);
         }
     }
 }
