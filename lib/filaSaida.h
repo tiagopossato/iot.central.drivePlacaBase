@@ -8,7 +8,7 @@ extern "C" {
 #include <stdbool.h>
 #include <pthread.h>
 
-#define TTL_SAIDA 5
+unsigned char maxTTL;
 
 typedef struct NoSaida
 {

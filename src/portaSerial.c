@@ -6,7 +6,6 @@
 #include <fcntl.h>   /* File control definitions */
 #include <errno.h>   /* Error number definitions */
 #include <termios.h> /* POSIX terminal control definitions */
-//
 
 int set_interface_attribs(int fd, int speed, int parity)
 {
@@ -63,23 +62,4 @@ void set_blocking(int fd, int should_block)
 
     if (tcsetattr(fd, TCSANOW, &tty) != 0)
         printf("error %d setting term attributes", errno);
-}
-
-int open_port(void)
-{
-    int fd; /* File descriptor for the port */
-
-    fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
-    if (fd == -1)
-    {
-        /*
-    * Could not open the port.
-    */
-
-        printf("open_port: Unable to open /dev/ttyf1 - ");
-    }
-    else
-        fcntl(fd, F_SETFL, 0);
-
-    return (fd);
 }

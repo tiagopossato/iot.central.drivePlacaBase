@@ -59,7 +59,9 @@ void *monitoraMensagens(void *args)
             }
             else
             {
-                printf("Mensagem: [%d/%d/%d/%f] não foi enviada!\n", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
+                char msgTmp[128];
+                sprintf(msgTmp, "Mensagem: [%d/%d/%d/%f] não foi enviada!", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
+                logMessage("ENVIA", msgTmp);
                 /*Libera mutex pois é usado na função apaga saida*/
                 pthread_mutex_unlock(&fila->mutex);
                 apagaNoSaida(tmp, fila);

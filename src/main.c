@@ -5,9 +5,12 @@
 #include <signal.h>
 #include <pthread.h>
 #include <sys/socket.h>
+#include <errno.h> /* Error number definitions */
 
 #include "../lib/filaEntrada.h"
 #include "../lib/definicoes.h"
+#include "../lib/util.h"
+
 #include "recebeDados.c"
 #include "enviaDados.c"
 #include "portaSerial.c"
@@ -19,7 +22,8 @@ FilaSaida *SAIDA;
 
 void encerraExecucao(int dummy)
 {
-    printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo...\n");
+    printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo.\n");
+    logMessage("MAIN", "Encerrando aplicação");
 
     int i = ENTRADA->quantidade;
     for (; i > 0; i--)
@@ -36,27 +40,41 @@ void encerraExecucao(int dummy)
 
 int main(int argc, char **argv)
 {
+    logMessage("MAIN", "Iniciando aplicação...");
+    char portname[16];
+    /*Abre o arquivo de configurações e pega o porta*/
+    FILE *arq = fopen("config", "r");
+    if (arq == NULL)
+    {
+        logMessage("MAIN", "Arquivo de configurações não encontrado!");
+        return;
+    }
+    fscanf(arq, "%s", portname); //le a porta
+    fscanf(arq, "%d", &maxTTL);  // le o TTL, variável declarada na filaSaida
+    fclose(arq);                 //fecha o arquivo
+
     ENTRADA = iniciaFila();
     if (ENTRADA == NULL)
     {
-        printf("Não pode iniciar a fila de entrada!\n");
+        logMessage("MAIN", "Não pode iniciar a fila de entrada!");
         exit(EXIT_FAILURE);
     }
 
     SAIDA = iniciaFilaSaida();
     if (SAIDA == NULL)
     {
-        printf("Não pode iniciar a fila de saida!\n");
+        logMessage("MAIN", "Não pode iniciar a fila de saida!");
         exit(EXIT_FAILURE);
     }
 
     signal(SIGINT, encerraExecucao);
 
-    char *portname = "/dev/ttyUSB0";
     int portaSerial = open(portname, O_RDWR | O_NOCTTY | O_SYNC);
     if (portaSerial < 0)
     {
-        printf("error %d opening %s: %s", errno, portname, strerror(errno));
+        char tmp[128];
+        sprintf(tmp, "error %d opening %s: %s", errno, portname, strerror(errno));
+        logMessage("MAIN", tmp);
         return;
     }
     set_interface_attribs(portaSerial, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
@@ -84,7 +102,7 @@ int main(int argc, char **argv)
     int socket = abreSocket();
     if (socket == -1)
     {
-        printf("Não pode iniciar o socket de entrada!\n");
+        logMessage("MAIN", "Não pode iniciar o socket de entrada!");
         exit(EXIT_FAILURE);
     }
 
@@ -96,7 +114,7 @@ int main(int argc, char **argv)
         memset(buf, '\0', sizeof(buf));
         if ((cl = accept(socket, NULL, NULL)) == -1) //chamada bloqueante
         {
-            perror("accept error");
+            logMessage("MAIN","Erro ao aceitar conexão do cliente no socket");
             continue;
         }
 
@@ -115,7 +133,7 @@ int main(int argc, char **argv)
         }
         if (rc == -1)
         {
-            perror("read");
+            logMessage("MAIN", "Erro ao ler dados enviados pelo cliente no socket");
             continue;
             //exit(-1);
         }

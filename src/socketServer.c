@@ -4,6 +4,7 @@
 #include <sys/socket.h>
 #include <sys/un.h>
 #include <stdlib.h>
+#include "../lib/util.h"
 
 char *socket_path = "/tmp/placaBase.socket";
 
@@ -33,13 +34,13 @@ int abreSocket()
 
   if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
-    perror("bind error");
+    logMessage("SOCKET","Erro no bind");
     return -1;
   }
 
   if (listen(fd, 5) == -1)
   {
-    perror("listen error");
+    logMessage("SOCKET","Erro no listen");
     return -1;
   }
 

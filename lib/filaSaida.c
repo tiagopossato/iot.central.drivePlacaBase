@@ -23,17 +23,13 @@ extern FilaSaida *iniciaFilaSaida()
     fila->quantidade = 0;
     if (pthread_mutex_init(&fila->mutex, NULL) == -1)
     {
-#if defined(DEBUG)
-        printf("Erro no mutex!");
-#endif
+        logMessage("FLSAIDA", "Erro no mutex!");
         return NULL;
     }
 
     if (fila == NULL)
     {
-#if defined(DEBUG)
-        printf("Erro ao criar fila de dados!");
-#endif
+        logMessage("FLSAIDA", "Erro ao criar fila de dados!");
         return NULL;
     }
     return fila;
@@ -45,6 +41,7 @@ e insere na fila de Saida
 */
 extern bool insereDadosSaida(char *uri, FilaSaida *fila)
 {
+    char msgTmp[128];
     /*TODO: Validar os Dados antes de inserir na fila*/
     char tmp[64];
     //verifica o início e final da string de dados
@@ -80,14 +77,15 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         novo->tipoGrandeza = tipoGrandeza;
         novo->grandeza = grandeza;
         novo->valor = valor;
-        novo->ttl = TTL_SAIDA;
+        novo->ttl = maxTTL;
         novo->prev = NULL;
         novo->next = NULL;
 
         //VALIDA TIPO DA GRANDEZA
         if (!validaTipoGrandeza(novo->tipoGrandeza))
         {
-            printf("Tipo de grandeza: %d não reconhecido!\n", novo->tipoGrandeza);
+            sprintf(msgTmp, "Tipo de grandeza: %d não reconhecido!", novo->tipoGrandeza);
+            logMessage("FLENT", msgTmp);
             free(novo);
             pthread_mutex_unlock(&fila->mutex);
             return false;
@@ -95,7 +93,8 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         //VALIDA GRANDEZA
         if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
         {
-            printf("Grandeza: %d não reconhecida!\n", novo->grandeza);
+            sprintf(msgTmp, "Grandeza: %d não reconhecida!", novo->grandeza);
+            logMessage("FLENT", msgTmp);
             free(novo);
             pthread_mutex_unlock(&fila->mutex);
             return false;
@@ -107,7 +106,7 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
     else
     {
         novo->valor = valor;
-        novo->ttl = TTL_SAIDA;
+        novo->ttl = maxTTL;
     }
     /* libera mutex */
     pthread_mutex_unlock(&fila->mutex);

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+
 #include "util.h"
 
 extern int buscaCaracter(char *buf, char caracter)
@@ -32,4 +34,18 @@ extern float extraiParte(char *entrada)
     }
     sprintf(entrada, entrada + i + 1);
     return atof(saida);
+}
+
+void logMessage(char *tipo, char *msg)
+{
+    time_t timer;
+    char data[26];
+    struct tm *tm_info;
+
+    time(&timer);
+    tm_info = localtime(&timer);
+
+    strftime(data, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    printf("[%s] %s: %s\n", data, tipo, msg);
 }
