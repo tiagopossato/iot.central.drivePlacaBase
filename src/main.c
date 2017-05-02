@@ -57,6 +57,7 @@ int main(int argc, char **argv)
     else
     {
         printf("SUCESSO -> Conexão com o Banco de Dados realizada!\n");
+        sqlite3_exec(db,"PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
     }
 
     logMessage("MAIN", "Iniciando aplicação...");

@@ -156,7 +156,7 @@ extern Saida *peekNoSaida(FilaSaida *fila)
 
 extern Saida *buscaNoSaida(unsigned int idRede, unsigned int tipoGrandeza, unsigned int grandeza, FilaSaida *fila)
 {
-    printf("Buscando Nó na saida: %d/%d/%d\n", idRede, tipoGrandeza, grandeza);
+    //printf("Buscando Nó na saida: %d/%d/%d\n", idRede, tipoGrandeza, grandeza);
     Saida *no = fila->head;
     while (no != NULL)
     {

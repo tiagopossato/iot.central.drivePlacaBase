@@ -21,18 +21,73 @@ typedef struct sSB
     sqlite3 *db;
 } ParametrosSalvaBanco;
 
-void status(char *info, int rc, FilaEntrada *fila)
+void mensagemEspecial(Entrada *dado);
+void status(char *info, int rc, FilaEntrada *fila);
+static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azColName);
+
+void *salvaBanco(void *args)
 {
-    if (rc != SQLITE_OK)
+    //pega os parametros enviados por argumento para a thread
+    ParametrosSalvaBanco *params = (ParametrosSalvaBanco *)args;
+    FilaEntrada *filaEntrada = params->filaEntrada;
+    banco = params->db;
+
+    while (true)
     {
-        printf("ERRO -> %s SQL error: %s\n", info, zErrMsg);
-        sqlite3_free(zErrMsg);
-        removeDoInicio(fila);   
+        pthread_cond_wait(&condicaoBanco, &mutexBanco);
+        //printf("Chegaram dados, inserindo no banco...\n");
+
+        if (filaEntrada->head == NULL)
+        {
+            /*Libera mutex*/
+            continue;
+        }
+
+        while (filaEntrada->head != NULL)
+        {
+            //pthread_mutex_lock(&mutexBanco);
+            char sql[256];
+
+            switch (filaEntrada->head->tipoGrandeza)
+            {
+            case entradaDigital:
+                printf("Dispositivo %d, entrada digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                removeDoInicio(filaEntrada);
+                break;
+            case saidaDigital:
+                printf("Dispositivo %d, saída digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                removeDoInicio(filaEntrada);
+                break;
+            case entradaAnalogica:
+                sprintf(sql, "SELECT ambiente_id FROM central_sensor WHERE idRede = %d;", filaEntrada->head->idRede);
+                printf("%s\n", sql);
+                status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
+                if (zErrMsg == NULL)
+                {
+                    printf("SELECT: NAO DEU ERRO\n");
+                }
+                break;
+            case especial:
+                mensagemEspecial(filaEntrada->head);
+                removeDoInicio(filaEntrada);
+                break;
+            default:
+                printf("Tipo de grandeza desconhecido: %d\n", filaEntrada->head->tipoGrandeza);
+                removeDoInicio(filaEntrada);
+                break;
+            }
+            //pthread_mutex_unlock(&mutexBanco);
+        }
     }
-    else
+}
+
+void mensagemEspecial(Entrada *dado)
+{
+    char msgTmp[128];
+    if (dado->grandeza == true)
     {
-        printf("SUCESSO -> %s executado no Banco de Dados. SQL zErrMsg: %s\n", info, zErrMsg);
-        sqlite3_free(zErrMsg);
+        sprintf(msgTmp, "Dispositivo: %d está online", dado->idRede);
+        logMessage("ONLINE", msgTmp);
     }
 }
 
@@ -52,39 +107,25 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
             fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
     printf("callback_select SQL: %s\n", sql);
     status("INSERT", sqlite3_exec(banco, sql, NULL, 0, &zErrMsg), fila);
+    if (zErrMsg == NULL)
+    {
+        printf("INSERT: NAO DEU ERRO\n");
+    }
     removeDoInicio(fila);
     return 0;
 }
 
-void *salvaBanco(void *args)
+void status(char *info, int rc, FilaEntrada *fila)
 {
-    //pega os parametros enviados por argumento para a thread
-    ParametrosSalvaBanco *params = (ParametrosSalvaBanco *)args;
-    FilaEntrada *filaEntrada = params->filaEntrada;
-    banco = params->db;
-
-    while (true)
+    if (rc != SQLITE_OK)
     {
-        pthread_cond_wait(&condicaoBanco, &mutexBanco);
-        printf("Chegaram dados, inserindo no banco...\n");
-
-        if (filaEntrada->head == NULL)
-        {
-            /*Libera mutex*/
-            continue;
-        }
-
-        while (filaEntrada->head != NULL)
-        {
-            //pthread_mutex_lock(&mutexBanco);
-            char sql[256];
-            sprintf(sql, "SELECT ambiente_id FROM central_sensor WHERE idRede = %d;", filaEntrada->head->idRede);
-            printf("%s\n", sql);
-            status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
-            if(zErrMsg == NULL) {
-                printf("NAO DEU ERRO\n");
-            }
-            //pthread_mutex_unlock(&mutexBanco);
-        }
+        printf("ERRO -> %s SQL error: %s\n", info, zErrMsg);
+        sqlite3_free(zErrMsg);
+        removeDoInicio(fila);
+    }
+    else
+    {
+        printf("SUCESSO -> %s executado no Banco de Dados. SQL zErrMsg: %s\n", info, zErrMsg);
+        sqlite3_free(zErrMsg);
     }
 }

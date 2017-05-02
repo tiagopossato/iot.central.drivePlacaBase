@@ -66,7 +66,7 @@ void *recebeDados(void *args)
             printf("\n+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
             if (insereDadosEntrada(uri, filaEntrada, filaSaida))
             {
-                printf("Avisando outra Thread\n");
+                //printf("Avisando outra Thread\n");
                 pthread_cond_signal(&condicaoBanco);
                 //pthread_mutex_unlock(&mutexBanco);
             }
