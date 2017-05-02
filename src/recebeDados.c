@@ -6,6 +6,8 @@
 #include "../lib/filaSaida.h"
 #include "../lib/definicoes.h"
 #include "../lib/util.h"
+#include <pthread.h>
+
 //porta serial
 #include <unistd.h> /* UNIX standard function definitions */
 #include <fcntl.h>  /* File control definitions */
@@ -28,6 +30,7 @@ void *recebeDados(void *args)
     //pega a fila de dados
     FilaEntrada *filaEntrada = params->filaEntrada;
     FilaSaida *filaSaida = params->filaSaida;
+
     //pega o descritor da porta serial
     int fd = params->portaSerial;
     /*
@@ -48,6 +51,7 @@ void *recebeDados(void *args)
         //le porta serial
         if (read(fd, buf, sizeof(buf)) > 0) //chamada bloqueante
         {
+            //pthread_mutex_lock(&mutexBanco);
             //verifica o início e final da string de dados
             inicio = buscaCaracter(buf, '[');
             fim = buscaCaracter(buf, ']');
@@ -60,7 +64,12 @@ void *recebeDados(void *args)
             memcpy(uri, &buf[inicio + 1], fim - (inicio + 1));
 
             printf("\n+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
-            insereDadosEntrada(uri, filaEntrada, filaSaida);
+            if (insereDadosEntrada(uri, filaEntrada, filaSaida))
+            {
+                printf("Avisando outra Thread\n");
+                pthread_cond_signal(&condicaoBanco);
+                //pthread_mutex_unlock(&mutexBanco);
+            }
             //mostraNoEntrada(filaEntrada->tail);
             imprimeFilaSaida(filaSaida);
         }

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <pthread.h>
+#include <sqlite3.h>
 #include <sys/socket.h>
 #include <errno.h> /* Error number definitions */
 
@@ -11,11 +12,11 @@
 #include "../lib/definicoes.h"
 #include "../lib/util.h"
 
-#include "recebeDados.c"
 #include "enviaDados.c"
 #include "portaSerial.c"
 #include "socketServer.c"
 #include "salvaBanco.c"
+#include "recebeDados.c"
 
 FilaEntrada *ENTRADA;
 FilaSaida *SAIDA;
@@ -24,7 +25,7 @@ void encerraExecucao(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo.\n");
     logMessage("MAIN", "Encerrando aplicação");
-
+    /*
     int i = ENTRADA->quantidade;
     for (; i > 0; i--)
     {
@@ -33,6 +34,7 @@ void encerraExecucao(int dummy)
         mostraNoEntrada(tmp);
         removeDoInicio(tmp, ENTRADA);
     }
+    */
     liberaFilaEntrada(ENTRADA);
     liberaFilaSaida(SAIDA);
     exit(EXIT_SUCCESS);
@@ -40,6 +42,23 @@ void encerraExecucao(int dummy)
 
 int main(int argc, char **argv)
 {
+    char msgTmp[128];
+    pthread_mutex_init(&mutexBanco, NULL);
+    pthread_cond_init(&condicaoBanco, NULL);
+
+    sqlite3 *db;
+
+    if (sqlite3_open("/opt/optativa/db.sqlite3", &db))
+    {
+        sprintf(msgTmp, "ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(db));
+        logMessage("MAIN", msgTmp);
+        return (0);
+    }
+    else
+    {
+        printf("SUCESSO -> Conexão com o Banco de Dados realizada!\n");
+    }
+
     logMessage("MAIN", "Iniciando aplicação...");
     char portname[16];
     /*Abre o arquivo de configurações e pega o porta*/
@@ -80,6 +99,12 @@ int main(int argc, char **argv)
     set_interface_attribs(portaSerial, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
     set_blocking(portaSerial, 1);                   // set blocking
 
+    ParametrosSalvaBanco paramsSalvaBanco;
+    paramsSalvaBanco.filaEntrada = ENTRADA;
+    paramsSalvaBanco.db = db;
+    pthread_t thSalvaBanco;
+    pthread_create(&thSalvaBanco, NULL, salvaBanco, &paramsSalvaBanco);
+
     ParametrosThreadRecebe paramsRecebe;
     paramsRecebe.filaEntrada = ENTRADA;
     paramsRecebe.filaSaida = SAIDA;
@@ -92,11 +117,6 @@ int main(int argc, char **argv)
     paramsMonitor.portaSerial = portaSerial;
     pthread_t thMonitor;
     pthread_create(&thMonitor, NULL, monitoraMensagens, &paramsMonitor);
-
-    ParametrosSalvaBanco paramsSalvaBanco;
-    paramsSalvaBanco.filaEntrada = ENTRADA;
-    pthread_t thSalvaBanco;
-    pthread_create(&thSalvaBanco, NULL, salvaBanco, &paramsSalvaBanco);
 
     //Abre socket para receber comandos
     int socket = abreSocket();
@@ -114,7 +134,7 @@ int main(int argc, char **argv)
         memset(buf, '\0', sizeof(buf));
         if ((cl = accept(socket, NULL, NULL)) == -1) //chamada bloqueante
         {
-            logMessage("MAIN","Erro ao aceitar conexão do cliente no socket");
+            logMessage("MAIN", "Erro ao aceitar conexão do cliente no socket");
             continue;
         }
 

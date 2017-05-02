@@ -133,23 +133,21 @@ extern Entrada *peekDados(FilaEntrada *fila)
 /**
  * Remove item na posicao desejada
  */
-extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila)
+extern bool removeDoInicio(FilaEntrada *fila)
 {
     pthread_mutex_lock(&fila->mutex);
 
-    if (dado == fila->head)
+    if (fila->head == NULL)
     {
-        fila->head = (Entrada *)dado->next;
-    }
-    else
-    {
-        printf("Não é o primeiro nó!");
         pthread_mutex_unlock(&fila->mutex);
-        return false;
+        return true;
     }
 
-    dado->next = NULL;
-    free(dado);
+    Entrada *tmp = fila->head;
+    fila->head = tmp->next;
+
+    tmp->next = NULL;
+    free(tmp);
 
     fila->quantidade--;
     /*Libera mutex*/

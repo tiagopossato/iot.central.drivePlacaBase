@@ -37,7 +37,7 @@ typedef struct sFilaDados
 //extern bool insereDadosEntrada(unsigned int _idRede, unsigned int _tipoGrandeza, unsigned int _grandeza, float _valor, FilaEntrada *fila);
 extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *filaSaida);
 extern Entrada *peekDados(FilaEntrada *fila);
-extern bool removeDoInicio(Entrada *dado, FilaEntrada *fila);
+extern bool removeDoInicio(FilaEntrada *fila);
 extern void imprimeFilaDados(FilaEntrada *fila);
 extern void mostraNoEntrada(Entrada *dado);
 extern void liberaFilaEntrada(FilaEntrada *fila);
