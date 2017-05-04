@@ -23,13 +23,13 @@ extern FilaEntrada *iniciaFila()
     fila->quantidade = 0;
     if (pthread_mutex_init(&fila->mutex, NULL) == -1)
     {
-        logMessage("FLENT", "Erro no mutex!");
+        logMessage("FLENT", "Erro no mutex!", true);
         return NULL;
     }
 
     if (fila == NULL)
     {
-        logMessage("FLENT", "Erro ao criar fila de dados!");
+        logMessage("FLENT", "Erro ao criar fila de dados!", true);
         return NULL;
     }
     return fila;
@@ -64,7 +64,7 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     if (!validaTipoGrandeza(novo->tipoGrandeza))
     {
         sprintf(msgTmp, "Tipo de grandeza: %d não reconhecido!", novo->tipoGrandeza);
-        logMessage("FLENT", msgTmp);
+        logMessage("FLENT", msgTmp, true);
         free(novo);
         pthread_mutex_unlock(&filaEntrada->mutex);
         return false;
@@ -73,7 +73,7 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
     {
         sprintf(msgTmp, "Grandeza: %d não reconhecida!", novo->grandeza);
-        logMessage("FLENT", msgTmp);
+        logMessage("FLENT", msgTmp, true);
         free(novo);
         pthread_mutex_unlock(&filaEntrada->mutex);
         return false;

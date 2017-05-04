@@ -14,6 +14,8 @@ pthread_cond_t condicaoBanco;
 
 char *zErrMsg = 0;
 
+bool consultaVazia = true;
+
 sqlite3 *banco;
 typedef struct sSB
 {
@@ -31,6 +33,8 @@ void *salvaBanco(void *args)
     ParametrosSalvaBanco *params = (ParametrosSalvaBanco *)args;
     FilaEntrada *filaEntrada = params->filaEntrada;
     banco = params->db;
+
+    char msgTmp[256];
 
     while (true)
     {
@@ -61,10 +65,13 @@ void *salvaBanco(void *args)
             case entradaAnalogica:
                 sprintf(sql, "SELECT ambiente_id FROM central_sensor WHERE idRede = %d;", filaEntrada->head->idRede);
                 printf("%s\n", sql);
+                consultaVazia = true;
                 status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
-                if (zErrMsg == NULL)
+                if (zErrMsg == NULL && consultaVazia)
                 {
-                    printf("SELECT: NAO DEU ERRO\n");
+                    sprintf(msgTmp, "O sensor %d não está cadastrado!", filaEntrada->head->idRede);
+                    logMessage("SENSOR", msgTmp, true);
+                    removeDoInicio(filaEntrada);
                 }
                 break;
             case especial:
@@ -87,12 +94,13 @@ void mensagemEspecial(Entrada *dado)
     if (dado->grandeza == true)
     {
         sprintf(msgTmp, "Dispositivo: %d está online", dado->idRede);
-        logMessage("ONLINE", msgTmp);
+        logMessage("ONLINE", msgTmp, false);
     }
 }
 
 static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azColName)
 {
+    consultaVazia = false;
     char sql[256];
     FilaEntrada *fila = (FilaEntrada *)_fila;
     int ambienteId;

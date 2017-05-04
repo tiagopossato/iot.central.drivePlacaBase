@@ -34,13 +34,13 @@ int abreSocket()
 
   if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) == -1)
   {
-    logMessage("SOCKET","Erro no bind");
+    logMessage("SOCKET","Erro no bind", true);
     return -1;
   }
 
   if (listen(fd, 5) == -1)
   {
-    logMessage("SOCKET","Erro no listen");
+    logMessage("SOCKET","Erro no listen", true);
     return -1;
   }
 

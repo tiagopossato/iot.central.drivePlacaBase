@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sqlite3.h>
 
 #include "util.h"
 
@@ -36,8 +37,12 @@ extern float extraiParte(char *entrada)
     return atof(saida);
 }
 
-void logMessage(char *tipo, char *msg)
+void logMessage(char *tipo, char *msg, bool salvar)
 {
+    sqlite3 *dbLog;
+    char *zErrMsg;
+    char sql[256];
+
     time_t timer;
     char data[26];
     struct tm *tm_info;
@@ -48,4 +53,27 @@ void logMessage(char *tipo, char *msg)
     strftime(data, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
     printf("[%s] %s: %s\n", data, tipo, msg);
+
+    if (!salvar)
+        return;
+
+        
+    if (sqlite3_open("/opt/optativa/db.sqlite3", &dbLog))
+    {
+        printf("ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(dbLog));
+        return;
+    }
+
+    sprintf(sql, "INSERT INTO central_log (tipo, mensagem, tempo) VALUES(\"%s\", \"%s\", %d)", tipo, msg, time(0));
+
+    printf("%s\n", sql);
+
+    sqlite3_exec(dbLog, sql, NULL, NULL, &zErrMsg);
+    if (zErrMsg != NULL)
+    {
+        printf("Erro na inserção do LOG: %s\n", zErrMsg);
+        sqlite3_free(zErrMsg);
+    }
+
+    sqlite3_close(dbLog);
 }

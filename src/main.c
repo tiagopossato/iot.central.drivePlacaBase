@@ -24,7 +24,7 @@ FilaSaida *SAIDA;
 void encerraExecucao(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo.\n");
-    logMessage("MAIN", "Encerrando aplicação");
+    logMessage("MAIN", "Encerrando aplicação", true);
     /*
     int i = ENTRADA->quantidade;
     for (; i > 0; i--)
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
     if (sqlite3_open("/opt/optativa/db.sqlite3", &db))
     {
         sprintf(msgTmp, "ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(db));
-        logMessage("MAIN", msgTmp);
+        logMessage("MAIN", msgTmp, false);
         return (0);
     }
     else
@@ -60,13 +60,13 @@ int main(int argc, char **argv)
         sqlite3_exec(db,"PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
     }
 
-    logMessage("MAIN", "Iniciando aplicação...");
+    logMessage("MAIN", "Iniciando aplicação...", true);
     char portname[16];
     /*Abre o arquivo de configurações e pega o porta*/
     FILE *arq = fopen("config", "r");
     if (arq == NULL)
     {
-        logMessage("MAIN", "Arquivo de configurações não encontrado!");
+        logMessage("MAIN", "Arquivo de configurações não encontrado!", true);
         return;
     }
     fscanf(arq, "%s", portname); //le a porta
@@ -76,14 +76,14 @@ int main(int argc, char **argv)
     ENTRADA = iniciaFila();
     if (ENTRADA == NULL)
     {
-        logMessage("MAIN", "Não pode iniciar a fila de entrada!");
+        logMessage("MAIN", "Não pode iniciar a fila de entrada!", true);
         exit(EXIT_FAILURE);
     }
 
     SAIDA = iniciaFilaSaida();
     if (SAIDA == NULL)
     {
-        logMessage("MAIN", "Não pode iniciar a fila de saida!");
+        logMessage("MAIN", "Não pode iniciar a fila de saida!", true);
         exit(EXIT_FAILURE);
     }
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
     {
         char tmp[128];
         sprintf(tmp, "error %d opening %s: %s", errno, portname, strerror(errno));
-        logMessage("MAIN", tmp);
+        logMessage("MAIN", tmp, true);
         return;
     }
     set_interface_attribs(portaSerial, B115200, 0); // set speed to 115,200 bps, 8n1 (no parity)
@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     int socket = abreSocket();
     if (socket == -1)
     {
-        logMessage("MAIN", "Não pode iniciar o socket de entrada!");
+        logMessage("MAIN", "Não pode iniciar o socket de entrada!", true);
         exit(EXIT_FAILURE);
     }
 
@@ -135,7 +135,7 @@ int main(int argc, char **argv)
         memset(buf, '\0', sizeof(buf));
         if ((cl = accept(socket, NULL, NULL)) == -1) //chamada bloqueante
         {
-            logMessage("MAIN", "Erro ao aceitar conexão do cliente no socket");
+            logMessage("MAIN", "Erro ao aceitar conexão do cliente no socket", true);
             continue;
         }
 
@@ -154,13 +154,13 @@ int main(int argc, char **argv)
         }
         if (rc == -1)
         {
-            logMessage("MAIN", "Erro ao ler dados enviados pelo cliente no socket");
+            logMessage("MAIN", "Erro ao ler dados enviados pelo cliente no socket", true);
             continue;
             //exit(-1);
         }
         else if (rc == 0)
         {
-            printf("EOF\nCliente desconectado...\n");
+            logMessage("MAIN","Cliente desconectado...", false);
             close(cl);
         }
     }
