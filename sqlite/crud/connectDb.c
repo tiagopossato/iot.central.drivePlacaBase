@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <sqlite/sqlite3.h> 
+#include <sqlite3.h> 
 
 int main(int argc, char* argv[])
 {

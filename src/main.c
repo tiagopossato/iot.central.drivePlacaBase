@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <signal.h>
 #include <pthread.h>
-#include <sqlite/sqlite3.h>
+#include <sqlite3.h>
 #include <sys/socket.h>
 #include <errno.h> /* Error number definitions */
 
