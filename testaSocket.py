@@ -1,6 +1,7 @@
 import socket
 import sys
 from time import sleep
+import random
 
 # Conecta o socket no arquivo
 server_address = '/tmp/placaBase.socket'
@@ -16,10 +17,11 @@ while(True):
 
 	try:
 		# Send data
-		message = '[3/3202/3320/]'
+		message = '['+str(random.randint(3,6))+'/3202/330'+str(random.randint(3,4))+'/]'
+		print(message)
 		enviados = sock.send(bytes(message, 'UTF-8'))
 		print("Bytes enviados: "+ str(enviados))
 	finally:
 		print('Fechando conexão')
 		sock.close()
-	sleep(.001)
+	sleep(.3)

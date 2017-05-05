@@ -71,7 +71,7 @@ void *recebeDados(void *args)
                 //pthread_mutex_unlock(&mutexBanco);
             }
             //mostraNoEntrada(filaEntrada->tail);
-            imprimeFilaSaida(filaSaida);
+            //imprimeFilaSaida(filaSaida);
         }
     }
 }

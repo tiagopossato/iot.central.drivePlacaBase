@@ -10,11 +10,11 @@ ar rv definicoes.a definicoes.o
 ar rv filaSaida.a filaSaida.o
 ar rv util.a util.o
 
-gcc  main.c -L. filaEntrada.a filaSaida.a definicoes.a util.a -o main.bin -lm -lrt -lpthread -lsqlite3
+gcc  main.c -L. filaEntrada.a filaSaida.a definicoes.a util.a -o drivePlacaBase.bin -lm -lrt -lpthread -lsqlite3
 
 rm filaEntrada.a filaEntrada.o
 rm definicoes.a definicoes.o
 rm filaSaida.a filaSaida.o
 rm util.a util.o
 
-./main.bin
+./drivePlacaBase.bin

@@ -43,6 +43,7 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
     char msgTmp[128];
     /*TODO: Validar os Dados antes de inserir na fila*/
     char tmp[64];
+    memset(tmp, '\0', sizeof(tmp));
     //verifica o início e final da string de dados
     int inicio = buscaCaracter(uri, '[');
     int fim = buscaCaracter(uri, ']');
@@ -51,16 +52,21 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
     {
         return false;
     }
+    // printf("inicio: %d, fim: %d\n", inicio, fim);
     //extração 1 dos dados
     memcpy(tmp, &uri[inicio + 1], fim - (inicio + 1));
 
-    pthread_mutex_lock(&fila->mutex);
-
+    // printf("Antes de extrair idRede: %s\n", tmp);
     unsigned int idRede = (unsigned int)extraiParte(tmp);
+    // printf("Antes de extrair tipoGrandeza: %s\n", tmp);
     unsigned int tipoGrandeza = (unsigned int)extraiParte(tmp);
+    // printf("Antes de extrair grandeza: %s\n", tmp);
     unsigned int grandeza = (unsigned int)extraiParte(tmp);
+    // printf("Antes de extrair valor: %s\n", tmp);
     float valor = extraiParte(tmp);
+    // printf("Valor: %f\n", valor);
 
+    pthread_mutex_lock(&fila->mutex);
     Saida *novo = buscaNoSaida(idRede, tipoGrandeza, grandeza, fila);
 
     if (novo == NULL)
@@ -69,6 +75,7 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         novo = (Saida *)malloc(sizeof(Saida));
         if (!novo)
         {
+            printf("Não pode alocar\n");
             pthread_mutex_unlock(&fila->mutex);
             return false;
         }
@@ -172,12 +179,12 @@ extern Saida *buscaNoSaida(unsigned int idRede, unsigned int tipoGrandeza, unsig
  */
 extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 {
+    http://br.ccm.net/faq/10254-lista-duplamente-encadeada#remocao-de-um-elemento-da-lista
     if (no == NULL)
         return true;
-
     pthread_mutex_lock(&fila->mutex);
     Saida *tmp;
-    //printf("Apagando nó: %p \n", no);
+    printf("Apagando nó: %p \n", no);
     if (no == fila->head)
     {
         fila->head = (Saida *)no->next;
@@ -191,14 +198,20 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
         }
         Saida *prev = (Saida *)tmp->prev;
         prev->next = tmp->next;
+        if (fila->tail == no)
+        {
+            if (prev != NULL)
+                fila->tail = prev;
+        }
     }
 
-    no->next == NULL;
-    no->prev == NULL;
+    no->next = NULL;
+    no->prev = NULL;
     free(no);
     fila->quantidade--;
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
+    imprimeFilaSaida(fila);
     return true;
 }
 
@@ -213,6 +226,7 @@ extern void imprimeFilaSaida(FilaSaida *fila)
     }
 
     printf("\nFila de SAIDA:\n");
+    printf("Fila->head: %p, Fila->tail: %p\n", fila->head, fila->tail);
 
     Saida *tmp = fila->head;
     while (tmp != NULL)
@@ -235,6 +249,8 @@ extern void mostraNoSaida(Saida *no)
     printf("grandeza: %d\n", no->grandeza);
     printf("valor: %f\n", no->valor);
     printf("ttl: %d\n", no->ttl);
+    printf("prev: %p\n", no->prev);
+    printf("next: %p\n", no->next);
 }
 
 extern void liberaFilaSaida(FilaSaida *fila)

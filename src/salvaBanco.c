@@ -111,7 +111,7 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
         //printf("\t%s = %d\n", azColName[i], ambienteId);
     }
 
-    sprintf(sql, "INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%f, %d, %d, %d, %d, 0);",
+    sprintf(sql, "INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%.2f, %d, %d, %d, %d, 0);",
             fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
     //printf("callback_select SQL: %s\n", sql);
     status("INSERT", sqlite3_exec(banco, sql, NULL, 0, &zErrMsg), fila);

@@ -57,7 +57,7 @@ int main(int argc, char **argv)
     else
     {
         printf("SUCESSO -> Conexão com o Banco de Dados realizada!\n");
-        sqlite3_exec(db,"PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
+        sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
     }
 
     logMessage("MAIN", "Iniciando aplicação...", true);
@@ -148,8 +148,8 @@ int main(int argc, char **argv)
                 //sprintf(buf, "%d", res);
                 //printf("%s\n", buf);
                 //write(socket, buf, rc);
-                enviaMensagem(SAIDA->tail, portaSerial);
-                //imprimeFilaSaida(SAIDA);
+                enviaMensagem(SAIDA->tail, SAIDA, portaSerial);
+                imprimeFilaSaida(SAIDA);
             }
         }
         if (rc == -1)
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
         }
         else if (rc == 0)
         {
-            logMessage("MAIN","Cliente desconectado...", false);
+            logMessage("MAIN", "Cliente desconectado...", false);
             close(cl);
         }
     }
