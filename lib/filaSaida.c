@@ -177,7 +177,7 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 
     pthread_mutex_lock(&fila->mutex);
     Saida *tmp;
-    printf("Apagando nó: %p \n", no);
+    //printf("Apagando nó: %p \n", no);
     if (no == fila->head)
     {
         fila->head = (Saida *)no->next;

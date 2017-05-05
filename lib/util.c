@@ -66,8 +66,6 @@ void logMessage(char *tipo, char *msg, bool salvar)
 
     sprintf(sql, "INSERT INTO central_log (tipo, mensagem, tempo) VALUES(\"%s\", \"%s\", %d)", tipo, msg, time(0));
 
-    printf("%s\n", sql);
-
     sqlite3_exec(dbLog, sql, NULL, NULL, &zErrMsg);
     if (zErrMsg != NULL)
     {

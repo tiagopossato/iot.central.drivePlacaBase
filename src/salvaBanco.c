@@ -64,7 +64,7 @@ void *salvaBanco(void *args)
                 break;
             case entradaAnalogica:
                 sprintf(sql, "SELECT ambiente_id FROM central_sensor WHERE idRede = %d;", filaEntrada->head->idRede);
-                printf("%s\n", sql);
+                //printf("%s\n", sql);
                 consultaVazia = true;
                 status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
                 if (zErrMsg == NULL && consultaVazia)
@@ -94,7 +94,7 @@ void mensagemEspecial(Entrada *dado)
     if (dado->grandeza == true)
     {
         sprintf(msgTmp, "Dispositivo: %d está online", dado->idRede);
-        logMessage("ONLINE", msgTmp, false);
+        logMessage("ONLINE", msgTmp, dado->idRede == 0 ? false : true);
     }
 }
 
@@ -108,16 +108,16 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
     for (i = 0; i < argc; i++)
     {
         ambienteId = atoi(argv[i] ? argv[i] : "NULL");
-        printf("\t%s = %d\n", azColName[i], ambienteId);
+        //printf("\t%s = %d\n", azColName[i], ambienteId);
     }
 
     sprintf(sql, "INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%f, %d, %d, %d, %d, 0);",
             fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
-    printf("callback_select SQL: %s\n", sql);
+    //printf("callback_select SQL: %s\n", sql);
     status("INSERT", sqlite3_exec(banco, sql, NULL, 0, &zErrMsg), fila);
     if (zErrMsg == NULL)
     {
-        printf("INSERT: NAO DEU ERRO\n");
+        //printf("INSERT: NAO DEU ERRO\n");
     }
     removeDoInicio(fila);
     return 0;
@@ -133,7 +133,7 @@ void status(char *info, int rc, FilaEntrada *fila)
     }
     else
     {
-        printf("SUCESSO -> %s executado no Banco de Dados. SQL zErrMsg: %s\n", info, zErrMsg);
+        //printf("SUCESSO -> %s executado no Banco de Dados. SQL zErrMsg: %s\n", info, zErrMsg);
         sqlite3_free(zErrMsg);
     }
 }

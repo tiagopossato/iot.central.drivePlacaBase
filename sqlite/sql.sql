@@ -4,7 +4,7 @@
 create table central_ambiente(id INTEGER PRIMARY KEY AUTOINCREMENT, nome TEXT);
 create table central_grandeza(codigo INTEGER PRIMARY KEY, nome TEXT, unidade TEXT);
 create table central_sensor(id INTEGER PRIMARY KEY AUTOINCREMENT, idRede INTEGER UNIQUE, ambiente_id REFERENCES central_ambiente(id), descricao TEXT);
-create table central_sensorgrandeza(id INTEGER PRIMARY KEY AUTOINCREMENT, sensor_id REFERENCES central_sensor(idRede), grandeza_id REFERENCES central_grandeza(codigo));
+create table central_sensorgrandeza(id INTEGER PRIMARY KEY AUTOINCREMENT, sensor_id REFERENCES central_sensor(idRede), grandeza_id REFERENCES central_grandeza(codigo), UNIQUE(sensor_id, grandeza_id) ON CONFLICT ROLLBACK);
 create table central_leitura(id INTEGER PRIMARY KEY AUTOINCREMENT, valor REAL, createdAt INTEGER, sync INTEGER DEFAULT 0, grandeza_id REFERENCES central_grandeza(codigo), sensor_id REFERENCES central_sensor(idRede), ambiente_id REFERENCES central_ambiente(id));
 create table central_log (id integer NOT NULL PRIMARY KEY AUTOINCREMENT, tipo varchar(6) NOT NULL, mensagem varchar(255) NOT NULL, sync bool NOT NULL DEFAULT 0, tempo datetime NOT NULL);
 

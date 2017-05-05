@@ -149,7 +149,7 @@ int main(int argc, char **argv)
                 //printf("%s\n", buf);
                 //write(socket, buf, rc);
                 enviaMensagem(SAIDA->tail, portaSerial);
-                imprimeFilaSaida(SAIDA);
+                //imprimeFilaSaida(SAIDA);
             }
         }
         if (rc == -1)

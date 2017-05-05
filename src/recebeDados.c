@@ -46,7 +46,7 @@ void *recebeDados(void *args)
     while (true)
     {
         //limpa as variaveis
-        memset(buf, 1, sizeof(buf));
+        memset(buf, '\0', sizeof(buf));
         memset(uri, '\0', sizeof(uri));
         //le porta serial
         if (read(fd, buf, sizeof(buf)) > 0) //chamada bloqueante
@@ -63,7 +63,7 @@ void *recebeDados(void *args)
             //extração 1 dos dados
             memcpy(uri, &buf[inicio + 1], fim - (inicio + 1));
 
-            printf("\n+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
+            printf("+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
             if (insereDadosEntrada(uri, filaEntrada, filaSaida))
             {
                 //printf("Avisando outra Thread\n");

@@ -25,7 +25,7 @@ void enviaMensagem(Saida *dados, int portaSerial)
         return;
     char uri[64];
     sprintf(uri, "%d/%d/%d/%f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
-    printf("Enviando: %s", uri);
+    //printf("Enviando: %s", uri);
     write(portaSerial, uri, strlen(uri));
     dados->ttl--;
 }
