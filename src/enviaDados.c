@@ -46,13 +46,13 @@ void enviaMensagem(Saida *dados, FilaSaida *fila, int portaSerial)
     sprintf(uri, "%d/%d/%d/%.2f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
     //printf("%s", uri);
     write(portaSerial, uri, strlen(uri));
-    printf("enviaMensagem: Bloqueando fila de saida\n");
+    //printf("enviaMensagem: Bloqueando fila de saida\n");
 
     //pthread_mutex_lock(&fila->mutex);
     dados->ttl--;
     /*Libera mutex*/
     //pthread_mutex_unlock(&fila->mutex);
-    printf("enviaMensagem: Liberou fila de saida\n");
+    //printf("enviaMensagem: Liberou fila de saida\n");
 }
 
 void *monitoraMensagens(void *args)

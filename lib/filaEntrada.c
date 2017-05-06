@@ -85,8 +85,19 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     pthread_mutex_unlock(&filaEntrada->mutex);
 
     //retira nó corresponte à solicitação na fila de saida
-    Saida *busca = buscaNoSaida(novo->idRede, novo->tipoGrandeza, novo->grandeza, filaSaida);
-    apagaNoSaida(busca, filaSaida);
+    Saida *busca = NULL;
+    if (novo->tipoGrandeza == entradaAnalogica) //regra de negócio
+    {
+        busca = buscaNoSaida(novo->idRede, novo->tipoGrandeza, novo->grandeza, filaSaida);
+    }
+    if (novo->tipoGrandeza == entradaDigital) //regra de negócio
+    {
+        busca = buscaNoSaida(novo->idRede, saidaDigital, novo->grandeza, filaSaida);
+    }
+    if (busca != NULL)
+    {
+        apagaNoSaida(busca, filaSaida);
+    }
 
     return true;
 }

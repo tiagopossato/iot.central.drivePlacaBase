@@ -128,19 +128,23 @@ void adicionaFimSaida(Saida *novo, FilaSaida *fila)
     if (fila->head == NULL)
     {
         //caso estiver, aponta para a estrutura criada
-        fila->head = novo;
-        fila->tail = novo;
+        fila->head = (Saida *)novo;
+        fila->tail = (Saida *)novo;
     }
     else
     {
-        //caso nao estiver vazia
-        //insere na fila
+        /*caso nao estiver vazia insere na fila*/
+        //Coloca fim da fila no prev do nó
         novo->prev = fila->tail;
+        //aponta next do fim da fila para o nó
         fila->tail->next = novo;
-        //aponta fim da fila para o último
+        //aponta fim da fila para o no
         fila->tail = novo;
     }
     fila->quantidade++;
+    printf("\n\n\n\n\n\n\nNa inserção\n");
+    mostraNoSaida(novo);
+    printf("\n\n\n\n\n\n\n\n");
 }
 
 extern Saida *peekNoSaida(FilaSaida *fila)
@@ -179,34 +183,63 @@ extern Saida *buscaNoSaida(unsigned int idRede, unsigned int tipoGrandeza, unsig
  */
 extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 {
-    http://br.ccm.net/faq/10254-lista-duplamente-encadeada#remocao-de-um-elemento-da-lista
     if (no == NULL)
         return true;
+
     pthread_mutex_lock(&fila->mutex);
     Saida *tmp;
     printf("Apagando nó: %p \n", no);
+    mostraNoSaida(no);
+    
+    /*Se for o 1º elemento da fila*/
     if (no == fila->head)
-    {
+    { //1
+        printf("No HEAD\n");
         fila->head = (Saida *)no->next;
-    }
+        if (fila->head == NULL)
+        {
+            fila->tail = NULL;
+        }
+        else
+        {
+            fila->head->prev = NULL;
+        }
+    } //1
     else
-    {
-        tmp = fila->head;
-        while (no != tmp && tmp != NULL)
-        {
-            tmp = (Saida *)tmp->next;
-        }
-        Saida *prev = (Saida *)tmp->prev;
-        prev->next = tmp->next;
-        if (fila->tail == no)
-        {
-            if (prev != NULL)
-                fila->tail = prev;
-        }
-    }
-
+    { //2
+        /*se for o último elemento da lista*/
+        if (no == fila->tail)
+        { //3
+            printf("No TAIL\n");
+            fila->tail = (Saida *)no->prev;
+            fila->tail->next = NULL;
+            //Saida *tail = (Saida *)fila->tail->prev;
+            //tail->next = NULL;
+            //fila->tail = (Saida *)fila->tail->prev;
+        } //3
+        else
+        { //4
+            /*Se for um elemento no meio da fila*/
+            if (no != fila->tail && no != fila->head)
+            { //5
+                printf("No meio\n");
+                // tmp = fila->head;
+                // while (no != tmp && tmp != NULL)
+                // {
+                //     tmp = (Saida *)tmp->next;
+                // }
+                Saida *prev = (Saida *)no->prev;
+                Saida *next = (Saida *)no->next;
+                prev->next = next;
+                next->prev = prev;
+            } //5
+        }     //4
+    }         //2
     no->next = NULL;
     no->prev = NULL;
+    no->idRede = 0;
+    no->grandeza = 0;
+    no->tipoGrandeza = 0;
     free(no);
     fila->quantidade--;
     /*Libera mutex*/
@@ -217,7 +250,7 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 
 extern void imprimeFilaSaida(FilaSaida *fila)
 {
-    pthread_mutex_lock(&fila->mutex);
+    //pthread_mutex_lock(&fila->mutex);
     if (fila->head == NULL)
     {
         /*Libera mutex*/
@@ -232,11 +265,16 @@ extern void imprimeFilaSaida(FilaSaida *fila)
     while (tmp != NULL)
     {
         mostraNoSaida(tmp);
+        if (tmp == fila->tail && fila->tail->next != NULL)
+        {
+            printf("Fila Tail não é NULL!\n");
+            exit(-1);
+        }
         tmp = (Saida *)tmp->next;
     }
     printf("\n");
     /*Libera mutex*/
-    pthread_mutex_unlock(&fila->mutex);
+    //pthread_mutex_unlock(&fila->mutex);
 }
 
 extern void mostraNoSaida(Saida *no)
@@ -251,6 +289,14 @@ extern void mostraNoSaida(Saida *no)
     printf("ttl: %d\n", no->ttl);
     printf("prev: %p\n", no->prev);
     printf("next: %p\n", no->next);
+
+    /*TESTES*/
+    if ((Saida *)no->next == no || (Saida *)no->prev == no || ((Saida *)no->next == (Saida *)no->prev && (Saida *)no->next != NULL))
+    {
+        printf("Nó com problema!\n");
+        exit(-1);
+    }
+    /*FIM DOS TESTES*/
 }
 
 extern void liberaFilaSaida(FilaSaida *fila)

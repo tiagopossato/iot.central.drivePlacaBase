@@ -17,11 +17,15 @@ while(True):
 
 	try:
 		# Send data
-		message = '['+str(random.randint(3,6))+'/3202/330'+str(random.randint(3,4))+'/]'
+		message = [
+			'['+str(random.randint(0,6))+'/3202/330'+str(random.randint(3,4))+']',
+			'['+str(random.randint(0,6))+'/3200/'+str(random.randint(0,7))+'/'+str(random.randint(0,1))+']'
+		]
 		print(message)
-		enviados = sock.send(bytes(message, 'UTF-8'))
+		enviados = sock.send(bytes(message[random.randint(0,1)], 'UTF-8'))
+		#enviados = sock.send(bytes(message[1], 'UTF-8'))	
 		print("Bytes enviados: "+ str(enviados))
 	finally:
 		print('Fechando conexão')
 		sock.close()
-	sleep(.3)
+	sleep(0.005)
