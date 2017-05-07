@@ -55,7 +55,8 @@ void *salvaBanco(void *args)
             switch (filaEntrada->head->tipoGrandeza)
             {
             case entradaDigital:
-                printf("Dispositivo %d, entrada digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                sprintf( msgTmp, "Dispositivo %d, entrada digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                logMessage("DIGITAL", msgTmp, true);
                 removeDoInicio(filaEntrada);
                 break;
             case saidaDigital:

@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     logMessage("MAIN", "Iniciando aplicação...", true);
     char portname[16];
     /*Abre o arquivo de configurações e pega o porta*/
-    FILE *arq = fopen("config", "r");
+    FILE *arq = fopen("/opt/optativa/config", "r");
     if (arq == NULL)
     {
         logMessage("MAIN", "Arquivo de configurações não encontrado!", true);

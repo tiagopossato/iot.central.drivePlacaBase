@@ -1,5 +1,9 @@
-Implementar envio de mensagens a cada 20 ms
-
 Disparar os alarmes
 
 Gerenciar as conexões no socket de entrada com Thread
+
+criar um usuário com permissão de acesso restrita:
+    ler e escrever na porta serial
+    ler a pasta /opt/optativa
+    ler e escrever no banco de dados
+    escrever nos arquivos de log
