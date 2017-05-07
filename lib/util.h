@@ -8,7 +8,7 @@ extern "C" {
 extern int buscaCaracter(char *buf, char caracter);
 extern float extraiParte(char *entrada);
 extern void logMessage(char *tipo, char *msg, bool salvar);
-
+extern long long currentTimestamp();
 #ifdef __cplusplus
 }
 #endif

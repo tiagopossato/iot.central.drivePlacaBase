@@ -1,11 +1,11 @@
-#include "filaSaida.h"
-#include "util.h"
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "filaSaida.h"
+#include "util.h"
+#include "definicoes.h"
 #define DEBUG
 
 //Função privada para adicionar elemento no final da fila
@@ -56,15 +56,10 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
     //extração 1 dos dados
     memcpy(tmp, &uri[inicio + 1], fim - (inicio + 1));
 
-    // printf("Antes de extrair idRede: %s\n", tmp);
     unsigned int idRede = (unsigned int)extraiParte(tmp);
-    // printf("Antes de extrair tipoGrandeza: %s\n", tmp);
     unsigned int tipoGrandeza = (unsigned int)extraiParte(tmp);
-    // printf("Antes de extrair grandeza: %s\n", tmp);
     unsigned int grandeza = (unsigned int)extraiParte(tmp);
-    // printf("Antes de extrair valor: %s\n", tmp);
     float valor = extraiParte(tmp);
-    // printf("Valor: %f\n", valor);
 
     pthread_mutex_lock(&fila->mutex);
     Saida *novo = buscaNoSaida(idRede, tipoGrandeza, grandeza, fila);
@@ -90,8 +85,8 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         //VALIDA TIPO DA GRANDEZA
         if (!validaTipoGrandeza(novo->tipoGrandeza))
         {
-            sprintf(msgTmp, "Tipo de grandeza: %d não reconhecido!", novo->tipoGrandeza);
-            logMessage("FLENT", msgTmp, true);
+            sprintf(msgTmp, "Tipo de grandeza: %d não reconhecida!", novo->tipoGrandeza);
+            logMessage("FLSAIDA", msgTmp, true);
             free(novo);
             pthread_mutex_unlock(&fila->mutex);
             return false;
@@ -99,8 +94,8 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
         //VALIDA GRANDEZA
         if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
         {
-            sprintf(msgTmp, "Grandeza: %d não reconhecida!", novo->grandeza);
-            logMessage("FLENT", msgTmp, true);
+            sprintf(msgTmp, "Tipo: %d, grandeza: %d. Não reconhecido!", novo->tipoGrandeza, novo->grandeza);
+            logMessage("FLSAIDA", msgTmp, true);
             free(novo);
             pthread_mutex_unlock(&fila->mutex);
             return false;
@@ -108,14 +103,24 @@ extern bool insereDadosSaida(char *uri, FilaSaida *fila)
 
         //Adiciona Dados no final da fila
         adicionaFimSaida(novo, fila);
+        /* libera mutex */
+        pthread_mutex_unlock(&fila->mutex);
+        /*regras de negócio*/
+        //se for uma solicitação para ligar uma saída,
+        //então insere uma solicitação para ler a entrada correspondente.
+        if (novo->tipoGrandeza == saidaDigital)
+        {
+            sprintf(msgTmp, "[%d/%d/%d/%f]\0", novo->idRede, entradaDigital, novo->grandeza, novo->valor);
+            insereDadosSaida(msgTmp, fila);
+        }
     }
     else
     {
         novo->valor = valor;
         novo->ttl = maxTTL;
-    }
-    /* libera mutex */
-    pthread_mutex_unlock(&fila->mutex);
+        /* libera mutex */
+        pthread_mutex_unlock(&fila->mutex);
+    }    
     return true;
 }
 
@@ -142,9 +147,6 @@ void adicionaFimSaida(Saida *novo, FilaSaida *fila)
         fila->tail = novo;
     }
     fila->quantidade++;
-    printf("\n\n\n\n\n\n\nNa inserção\n");
-    mostraNoSaida(novo);
-    printf("\n\n\n\n\n\n\n\n");
 }
 
 extern Saida *peekNoSaida(FilaSaida *fila)
@@ -188,13 +190,12 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
 
     pthread_mutex_lock(&fila->mutex);
     Saida *tmp;
-    printf("Apagando nó: %p \n", no);
-    mostraNoSaida(no);
-    
+    //printf("Apagando nó: %p \n", no);
+    //mostraNoSaida(no);
+
     /*Se for o 1º elemento da fila*/
     if (no == fila->head)
     { //1
-        printf("No HEAD\n");
         fila->head = (Saida *)no->next;
         if (fila->head == NULL)
         {
@@ -210,24 +211,14 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
         /*se for o último elemento da lista*/
         if (no == fila->tail)
         { //3
-            printf("No TAIL\n");
             fila->tail = (Saida *)no->prev;
             fila->tail->next = NULL;
-            //Saida *tail = (Saida *)fila->tail->prev;
-            //tail->next = NULL;
-            //fila->tail = (Saida *)fila->tail->prev;
         } //3
         else
         { //4
             /*Se for um elemento no meio da fila*/
             if (no != fila->tail && no != fila->head)
             { //5
-                printf("No meio\n");
-                // tmp = fila->head;
-                // while (no != tmp && tmp != NULL)
-                // {
-                //     tmp = (Saida *)tmp->next;
-                // }
                 Saida *prev = (Saida *)no->prev;
                 Saida *next = (Saida *)no->next;
                 prev->next = next;
@@ -244,7 +235,7 @@ extern bool apagaNoSaida(Saida *no, FilaSaida *fila)
     fila->quantidade--;
     /*Libera mutex*/
     pthread_mutex_unlock(&fila->mutex);
-    imprimeFilaSaida(fila);
+    //imprimeFilaSaida(fila);
     return true;
 }
 
@@ -265,11 +256,6 @@ extern void imprimeFilaSaida(FilaSaida *fila)
     while (tmp != NULL)
     {
         mostraNoSaida(tmp);
-        if (tmp == fila->tail && fila->tail->next != NULL)
-        {
-            printf("Fila Tail não é NULL!\n");
-            exit(-1);
-        }
         tmp = (Saida *)tmp->next;
     }
     printf("\n");
@@ -289,14 +275,6 @@ extern void mostraNoSaida(Saida *no)
     printf("ttl: %d\n", no->ttl);
     printf("prev: %p\n", no->prev);
     printf("next: %p\n", no->next);
-
-    /*TESTES*/
-    if ((Saida *)no->next == no || (Saida *)no->prev == no || ((Saida *)no->next == (Saida *)no->prev && (Saida *)no->next != NULL))
-    {
-        printf("Nó com problema!\n");
-        exit(-1);
-    }
-    /*FIM DOS TESTES*/
 }
 
 extern void liberaFilaSaida(FilaSaida *fila)

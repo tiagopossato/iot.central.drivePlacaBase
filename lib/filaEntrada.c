@@ -63,7 +63,7 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     //VALIDA TIPO DA GRANDEZA
     if (!validaTipoGrandeza(novo->tipoGrandeza))
     {
-        sprintf(msgTmp, "Tipo de grandeza: %d não reconhecido!", novo->tipoGrandeza);
+        sprintf(msgTmp, "Tipo de grandeza: %d não reconhecida!", novo->tipoGrandeza);
         logMessage("FLENT", msgTmp, true);
         free(novo);
         pthread_mutex_unlock(&filaEntrada->mutex);
@@ -72,7 +72,7 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     //VALIDA GRANDEZA
     if (!validaGrandeza(novo->grandeza, novo->tipoGrandeza))
     {
-        sprintf(msgTmp, "Grandeza: %d não reconhecida!", novo->grandeza);
+        sprintf(msgTmp, "Tipo: %d, grandeza: %d. Não reconhecido!", novo->tipoGrandeza, novo->grandeza);
         logMessage("FLENT", msgTmp, true);
         free(novo);
         pthread_mutex_unlock(&filaEntrada->mutex);
@@ -84,19 +84,36 @@ extern bool insereDadosEntrada(char *uri, FilaEntrada *filaEntrada, FilaSaida *f
     /* libera mutex */
     pthread_mutex_unlock(&filaEntrada->mutex);
 
-    //retira nó corresponte à solicitação na fila de saida
+    //retira nó correspondente à solicitação na fila de saida
     Saida *busca = NULL;
     if (novo->tipoGrandeza == entradaAnalogica) //regra de negócio
     {
         busca = buscaNoSaida(novo->idRede, novo->tipoGrandeza, novo->grandeza, filaSaida);
+        if (busca != NULL)
+        {
+            apagaNoSaida(busca, filaSaida);
+        }
     }
     if (novo->tipoGrandeza == entradaDigital) //regra de negócio
     {
         busca = buscaNoSaida(novo->idRede, saidaDigital, novo->grandeza, filaSaida);
-    }
-    if (busca != NULL)
-    {
-        apagaNoSaida(busca, filaSaida);
+        if (busca != NULL)
+        {
+            //verifica se a entrada digital mudou para o estado solicitado
+            if (novo->valor == busca->valor)
+            {
+                //se a entrada mudou para o estado solicitado
+                //então a operação foi bem sucedida e
+                //a mensagem pode ser retirada da fila de saída
+                apagaNoSaida(busca, filaSaida);
+                //apaga a solicitação de leitura da entrada
+                busca = buscaNoSaida(novo->idRede, entradaDigital, novo->grandeza, filaSaida);
+                if (busca != NULL)
+                {
+                    apagaNoSaida(busca, filaSaida);
+                }
+            }
+        }
     }
 
     return true;

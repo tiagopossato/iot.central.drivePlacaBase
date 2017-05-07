@@ -16,13 +16,6 @@ typedef struct sPE
     int portaSerial;
 } ParametrosThreadMonitor;
 
-long long current_timestamp()
-{
-    struct timeval te;
-    gettimeofday(&te, NULL);                                         // get current time
-    long long milliseconds = te.tv_sec * 1000LL + te.tv_usec / 1000; // caculate milliseconds
-    return milliseconds;
-}
 
 /*
 Padrão da URI:
@@ -35,12 +28,12 @@ void enviaMensagem(Saida *dados, FilaSaida *fila, int portaSerial)
     if (dados == NULL)
         return;
 
-    while ((current_timestamp() - lastTimestamp) < 20)
+    while ((currentTimestamp() - lastTimestamp) < 50)
     {
-        usleep(1000);
+        usleep(500);
     }
-    //printf("Esperou: %lld\n", current_timestamp() -lastTimestamp);
-    lastTimestamp = current_timestamp();
+    //printf("Esperou: %lld\n", currentTimestamp() -lastTimestamp);
+    lastTimestamp = currentTimestamp();
 
     char uri[64];
     sprintf(uri, "%d/%d/%d/%.2f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
@@ -48,10 +41,10 @@ void enviaMensagem(Saida *dados, FilaSaida *fila, int portaSerial)
     write(portaSerial, uri, strlen(uri));
     //printf("enviaMensagem: Bloqueando fila de saida\n");
 
-    //pthread_mutex_lock(&fila->mutex);
+    pthread_mutex_lock(&fila->mutex);
     dados->ttl--;
     /*Libera mutex*/
-    //pthread_mutex_unlock(&fila->mutex);
+    pthread_mutex_unlock(&fila->mutex);
     //printf("enviaMensagem: Liberou fila de saida\n");
 }
 
@@ -82,7 +75,7 @@ void *monitoraMensagens(void *args)
             else
             {
                 char msgTmp[128];
-                sprintf(msgTmp, "Mensagem: [%d/%d/%d/%f] não foi enviada!", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
+                sprintf(msgTmp, "Mensagem: [%d/%d/%d/%f] não obteve resposta!", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);
                 logMessage("ENVIA", msgTmp, true);
                 apagaNoSaida(tmp, fila);
             }

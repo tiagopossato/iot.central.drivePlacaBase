@@ -1,4 +1,4 @@
-rm main.bin
+rm drivePlacaBase.bin
 
 gcc -c ../lib/filaEntrada.c -o filaEntrada.o
 gcc -c ../lib/filaSaida.c -o filaSaida.o
