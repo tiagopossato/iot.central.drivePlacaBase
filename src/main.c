@@ -48,7 +48,7 @@ int main(int argc, char **argv)
 
     sqlite3 *db;
 
-    if (sqlite3_open("/opt/optativa/db.sqlite3", &db))
+    if (sqlite3_open("/opt/iot.central/banco/db.sqlite3", &db))
     {
         sprintf(msgTmp, "ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(db));
         logMessage("MAIN", msgTmp, false);
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
     logMessage("MAIN", "Iniciando aplicação...", true);
     char portname[16];
     /*Abre o arquivo de configurações e pega o porta*/
-    FILE *arq = fopen("/opt/optativa/config", "r");
+    FILE *arq = fopen("/opt/iot.central/driveConfig", "r");
     if (arq == NULL)
     {
         logMessage("MAIN", "Arquivo de configurações não encontrado!", true);
