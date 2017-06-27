@@ -36,7 +36,7 @@ void enviaMensagem(Saida *dados, FilaSaida *fila, int portaSerial)
     lastTimestamp = currentTimestamp();
 
     char uri[64];
-    sprintf(uri, "%d/%d/%d/%.2f\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
+    sprintf(uri, "[%d/%d/%d/%.2f]\n", dados->idRede, dados->tipoGrandeza, dados->grandeza, dados->valor);
     //printf("%s", uri);
     write(portaSerial, uri, strlen(uri));
     //printf("enviaMensagem: Bloqueando fila de saida\n");

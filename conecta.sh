@@ -1,4 +1,4 @@
-socat - UNIX-CONNECT:socket
+socat - UNIX-CONNECT:/tmp/placaBase.sock
 
 [3/3201/2/1]
 [3/3201/2/1]

@@ -52,7 +52,7 @@ int main(int argc, char **argv)
     {
         sprintf(msgTmp, "ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(db));
         logMessage("MAIN", msgTmp, false);
-        return (0);
+        exit(0);
     }
     else
     {

@@ -63,13 +63,13 @@ void logMessage(char *tipo, char *msg, bool salvar)
     if (!salvar)
         return;
 
-    if (sqlite3_open("/opt/optativa/db.sqlite3", &dbLog))
+    if (sqlite3_open("/opt/iot.central/db.sqlite3", &dbLog))
     {
-        printf("ERRO -> Problema na conexão com o Banco de Dados: %s\n", sqlite3_errmsg(dbLog));
+        printf("ERRO -> Problema na conexao com o Banco de Dados: %s\n", sqlite3_errmsg(dbLog));
         return;
     }
 
-    sprintf(sql, "INSERT INTO central_log (tipo, mensagem, tempo) VALUES(\"%s\", \"%s\", %d)", tipo, msg, time(0));
+    sprintf(sql, "INSERT INTO central_log (tipo, mensagem, tempo, sync) VALUES(\"%s\", \"%s\", \"%s\", 0)", tipo, msg, data);
 
     sqlite3_exec(dbLog, sql, NULL, NULL, &zErrMsg);
     if (zErrMsg != NULL)
