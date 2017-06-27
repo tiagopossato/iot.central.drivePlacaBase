@@ -63,7 +63,7 @@ void logMessage(char *tipo, char *msg, bool salvar)
     if (!salvar)
         return;
 
-    if (sqlite3_open("/opt/iot.central/db.sqlite3", &dbLog))
+    if (sqlite3_open("/opt/iot.central/banco/db.sqlite3", &dbLog))
     {
         printf("ERRO -> Problema na conexao com o Banco de Dados: %s\n", sqlite3_errmsg(dbLog));
         return;
