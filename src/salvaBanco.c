@@ -1,7 +1,3 @@
-#include <stdio.h>
-#include <sqlite3.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdbool.h>
 #include <unistd.h> /* UNIX standard function definitions */
 #include <pthread.h>
@@ -49,13 +45,23 @@ void *salvaBanco(void *args)
 
         while (filaEntrada->head != NULL)
         {
-            //pthread_mutex_lock(&mutexBanco);
-            char sql[256];
+            char *sql;        
 
             switch (filaEntrada->head->tipoGrandeza)
             {
             case entradaDigital:
-                sprintf( msgTmp, "Dispositivo %d, entrada digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                sprintf(msgTmp, "Dispositivo %d, entrada digital:%d -> %d\n",
+                        filaEntrada->head->idRede,
+                        filaEntrada->head->grandeza,
+                        (int)filaEntrada->head->valor);
+
+                sql = sqlite3_mprintf("UPDATE central_entradadigital SET estado = %d WHERE numero=%d AND placaExpansaoDigital_id=%d;",
+                        (int)filaEntrada->head->valor,
+                        filaEntrada->head->grandeza,
+                        filaEntrada->head->idRede);
+
+                sqlite3_free(sql);
+
                 logMessage("DIGITAL", msgTmp, true);
                 removeDoInicio(filaEntrada);
                 break;
@@ -64,8 +70,9 @@ void *salvaBanco(void *args)
                 removeDoInicio(filaEntrada);
                 break;
             case entradaAnalogica:
-                sprintf(sql, "SELECT ambiente_id FROM central_sensor WHERE idRede = %d;", filaEntrada->head->idRede);
-                //printf("%s\n", sql);
+                sql = sqlite3_mprintf("SELECT ambiente_id FROM central_sensor WHERE idRede = %d;",
+                 filaEntrada->head->idRede);
+
                 consultaVazia = true;
                 status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
                 if (zErrMsg == NULL && consultaVazia)
@@ -84,7 +91,7 @@ void *salvaBanco(void *args)
                 removeDoInicio(filaEntrada);
                 break;
             }
-            //pthread_mutex_unlock(&mutexBanco);
+            sqlite3_free(sql);
         }
     }
 }
@@ -102,7 +109,7 @@ void mensagemEspecial(Entrada *dado)
 static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azColName)
 {
     consultaVazia = false;
-    char sql[256];
+    char *sql;
     FilaEntrada *fila = (FilaEntrada *)_fila;
     int ambienteId;
     int i;
@@ -112,7 +119,7 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
         //printf("\t%s = %d\n", azColName[i], ambienteId);
     }
 
-    sprintf(sql, "INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%.2f, %d, %d, %d, %d, 0);",
+    sql = sqlite3_mprintf("INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%.2f, %d, %d, %d, %d, 0);",
             fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
     //printf("callback_select SQL: %s\n", sql);
     status("INSERT", sqlite3_exec(banco, sql, NULL, 0, &zErrMsg), fila);
@@ -135,6 +142,6 @@ void status(char *info, int rc, FilaEntrada *fila)
     else
     {
         //printf("SUCESSO -> %s executado no Banco de Dados. SQL zErrMsg: %s\n", info, zErrMsg);
-        sqlite3_free(zErrMsg);
     }
+    sqlite3_free(zErrMsg);
 }
