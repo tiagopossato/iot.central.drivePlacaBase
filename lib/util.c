@@ -21,7 +21,7 @@ extern int buscaCaracter(char *buf, char caracter)
 extern float extraiParte(char *entrada)
 {
     //printf("entrada: %s[%d]\n", entrada,strlen(entrada));
-    if (entrada[strlen(entrada)-1] != '/')
+    if (entrada[strlen(entrada) - 1] != '/')
     {
         sprintf(entrada, "%s/", entrada);
     }
@@ -47,7 +47,7 @@ void logMessage(char *tipo, char *msg, bool salvar)
 {
     sqlite3 *dbLog;
     char *zErrMsg;
-    char sql[256];
+    char *sql;
 
     time_t timer;
     char data[26];
@@ -58,10 +58,11 @@ void logMessage(char *tipo, char *msg, bool salvar)
 
     strftime(data, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
-    printf("[%s] %s: %s\n", data, tipo, msg);
-
     if (!salvar)
+    {
+        printf("[%s] %s: %s\n", data, tipo, msg);
         return;
+    }
 
     if (sqlite3_open("/opt/iot.central/banco/db.sqlite3", &dbLog))
     {
@@ -69,7 +70,7 @@ void logMessage(char *tipo, char *msg, bool salvar)
         return;
     }
 
-    sprintf(sql, "INSERT INTO central_log (tipo, mensagem, tempo, sync) VALUES(\"%s\", \"%s\", \"%s\", 0)", tipo, msg, data);
+    sql = sqlite3_mprintf("INSERT INTO central_log (tipo, mensagem, tempo, sync) VALUES(\"%s\", \"%s\", \"%s\", 0)", tipo, msg, data);
 
     sqlite3_exec(dbLog, sql, NULL, NULL, &zErrMsg);
     if (zErrMsg != NULL)
@@ -77,7 +78,7 @@ void logMessage(char *tipo, char *msg, bool salvar)
         printf("Erro na inserção do LOG: %s\n", zErrMsg);
         sqlite3_free(zErrMsg);
     }
-
+    sqlite3_free(sql);
     sqlite3_close(dbLog);
 }
 

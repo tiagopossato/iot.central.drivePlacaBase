@@ -24,7 +24,7 @@ FilaSaida *SAIDA;
 void encerraExecucao(int dummy)
 {
     printf("\nSinal de encerramento recebido, mostrando, encerrando fila e saindo.\n");
-    logMessage("MAIN", "Encerrando aplicação", true);
+    logMessage("MAIN", "Encerrando drive da placa base", true);
     /*
     int i = ENTRADA->quantidade;
     for (; i > 0; i--)
@@ -60,7 +60,7 @@ int main(int argc, char **argv)
         sqlite3_exec(db, "PRAGMA foreign_keys = ON;", NULL, NULL, NULL);
     }
 
-    logMessage("MAIN", "Iniciando aplicação...", true);
+    logMessage("MAIN", "Iniciando drive da placa base...", true);
     char portname[16];
     /*Abre o arquivo de configurações e pega o porta*/
     FILE *arq = fopen("/opt/iot.central/driveConfig", "r");
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
         }
         else if (rc == 0)
         {
-            logMessage("MAIN", "Cliente desconectado...", false);
+            //logMessage("MAIN", "Cliente desconectado...", false);
             close(cl);
         }
     }

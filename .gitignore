@@ -28,3 +28,6 @@
 *.out
 *.app
 *.bin
+
+#pasta do vscode
+.vscode/

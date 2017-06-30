@@ -69,7 +69,7 @@ void *monitoraMensagens(void *args)
         {
             if (tmp->ttl > 0)
             {
-                printf("Reenviando: %d/%d/%d/%.2f\n", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);                
+                //printf("Reenviando: %d/%d/%d/%.2f\n", tmp->idRede, tmp->tipoGrandeza, tmp->grandeza, tmp->valor);                
                 enviaMensagem(tmp, fila, params->portaSerial);
             }
             else

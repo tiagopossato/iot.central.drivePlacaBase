@@ -63,7 +63,7 @@ void *recebeDados(void *args)
             //extração 1 dos dados
             memcpy(uri, &buf[inicio + 1], fim - (inicio + 1));
 
-            printf("+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
+            //printf("+++++++++++++++++++++++++++++++++++++++++\nRecebido:%s\n", uri);
             if (insereDadosEntrada(uri, filaEntrada, filaSaida))
             {
                 //printf("Avisando outra Thread\n");

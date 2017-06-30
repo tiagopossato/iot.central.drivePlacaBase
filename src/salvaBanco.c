@@ -45,7 +45,7 @@ void *salvaBanco(void *args)
 
         while (filaEntrada->head != NULL)
         {
-            char *sql;        
+            char *sql;
 
             switch (filaEntrada->head->tipoGrandeza)
             {
@@ -56,9 +56,9 @@ void *salvaBanco(void *args)
                         (int)filaEntrada->head->valor);
 
                 sql = sqlite3_mprintf("UPDATE central_entradadigital SET estado = %d WHERE numero=%d AND placaExpansaoDigital_id=%d;",
-                        (int)filaEntrada->head->valor,
-                        filaEntrada->head->grandeza,
-                        filaEntrada->head->idRede);
+                                      (int)filaEntrada->head->valor,
+                                      filaEntrada->head->grandeza,
+                                      filaEntrada->head->idRede);
 
                 sqlite3_free(sql);
 
@@ -66,12 +66,12 @@ void *salvaBanco(void *args)
                 removeDoInicio(filaEntrada);
                 break;
             case saidaDigital:
-                printf("Dispositivo %d, saída digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
+                //printf("Dispositivo %d, saída digital:%d -> %d\n", filaEntrada->head->idRede, filaEntrada->head->grandeza, (int)filaEntrada->head->valor);
                 removeDoInicio(filaEntrada);
                 break;
             case entradaAnalogica:
                 sql = sqlite3_mprintf("SELECT ambiente_id FROM central_sensor WHERE idRede = %d;",
-                 filaEntrada->head->idRede);
+                                      filaEntrada->head->idRede);
 
                 consultaVazia = true;
                 status("SELECT", sqlite3_exec(banco, sql, callbackSelectAmbiente, (void *)filaEntrada, &zErrMsg), filaEntrada);
@@ -120,7 +120,7 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
     }
 
     sql = sqlite3_mprintf("INSERT INTO central_leitura (valor, grandeza_id, sensor_id, ambiente_id, createdAt, sync) VALUES (%.2f, %d, %d, %d, %d, 0);",
-            fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
+                          fila->head->valor, fila->head->grandeza, fila->head->idRede, ambienteId, fila->head->timestamp);
     //printf("callback_select SQL: %s\n", sql);
     status("INSERT", sqlite3_exec(banco, sql, NULL, 0, &zErrMsg), fila);
     if (zErrMsg == NULL)
@@ -128,6 +128,7 @@ static int callbackSelectAmbiente(void *_fila, int argc, char **argv, char **azC
         //printf("INSERT: NAO DEU ERRO\n");
     }
     removeDoInicio(fila);
+    sqlite3_free(sql);
     return 0;
 }
 
